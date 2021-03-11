@@ -1,30 +1,20 @@
 ﻿using ILGPU;
 using ILGPU.Runtime;
+using ILGPU.Runtime.CPU;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ILGPUView
 {
-    public delegate int setupDelegate(Context context, Accelerator accelerator, int width, int height);
+    public delegate int setupDelegate(Accelerator accelerator, int width, int height);
     public delegate int loopDelegate(ref byte[] bitmap);
 
     public class Templates
     {
+        public static readonly string codeTemplate = @"
 
-        public static readonly string usingStatements = @"
-
-                using System;
-                using System.Diagnostics;
-                using ILGPU;
-                using ILGPU.Runtime;
-                using ILGPU.Runtime.CPU;
-
-";
-        public static readonly string codeTemplate = usingStatements + @"
-
+        using ILGPU;
+        using ILGPU.Runtime;
+        using System;
 
 namespace ILGPUViewTest
 {
@@ -75,12 +65,12 @@ namespace ILGPUViewTest
             int newIndex = ((index.Y * c.sizeY) + index.X) * 3;
             Color color = c.canvas[index];
 
-            bitmap[newIndex] = (byte)(255.99f * color.r);
+            bitmap[newIndex] =     (byte)(255.99f * color.r);
             bitmap[newIndex + 1] = (byte)(255.99f * color.g);
             bitmap[newIndex + 2] = (byte)(255.99f * color.b);
         }
 
-        public static int setup(Context context, Accelerator accelerator, int width, int height)
+        public static int setup(Accelerator accelerator, int width, int height)
         {
             canvasData = accelerator.Allocate<Color>(height, width);
             c = new Canvas(canvasData, height, width);
@@ -167,12 +157,12 @@ namespace ILGPUViewTest
             int newIndex = ((index.Y * c.sizeY) + index.X) * 3;
             Color color = c.canvas[index];
 
-            bitmap[newIndex] = (byte)(255.99f * color.r);
+            bitmap[newIndex] =     (byte)(255.99f * color.r);
             bitmap[newIndex + 1] = (byte)(255.99f * color.g);
             bitmap[newIndex + 2] = (byte)(255.99f * color.b);
         }
 
-        public static int setup(Context context, Accelerator accelerator, int width, int height)
+        public static int setup(Accelerator accelerator, int width, int height)
         {
             canvasData = accelerator.Allocate<Color>(height, width);
             c = new Canvas(canvasData, height, width);

@@ -26,6 +26,7 @@ namespace ILGPUView
         {
             InitializeComponent();
             code = new CodeManager();
+            codeblock.Text = Templates.codeTemplate;
         }
     }
 }

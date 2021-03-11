@@ -26,7 +26,7 @@
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
             <Image x:Name="frame"/>
-            <TextBlock Grid.Column="1"/>
+            <TextBlock Name="codeblock" Grid.Column="1"/>
         </Grid>
     </Grid>
 </Window>

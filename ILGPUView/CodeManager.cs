@@ -35,13 +35,13 @@ namespace ILGPUView
         public CodeManager()
         {
             InitializeILGPU(AcceleratorType.CPU);
-            CompileCode(Templates.codeTemplate);
 
             //compiled at built time
-            ILGPUViewTest.Test.setup(context, accelerator, 100, 100);
+            ILGPUViewTest.Test.setup(accelerator, 100, 100);
 
             //compiled at run time
-            setup(context, accelerator, 100, 100);
+            CompileCode(Templates.codeTemplate);
+            setup(accelerator, 100, 100);
         }
 
         private bool InitializeILGPU(AcceleratorType type)
@@ -69,6 +69,8 @@ namespace ILGPUView
 
         private void CompileCode(string s)
         {
+            // The following is magic taken from https://stackoverflow.com/a/29417053/1500733
+
             // define source code, then parse it (to the type used for compilation)
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(s);
 
@@ -91,6 +93,7 @@ namespace ILGPUView
                 references: references,
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
+            //I save the memoryStream so that I can cache function delegates and call them
             compiledCode = new MemoryStream();
             EmitResult result = compilation.Emit(compiledCode);
 
@@ -116,6 +119,7 @@ namespace ILGPUView
                 Type type = assembly.GetType("ILGPUViewTest.Test");
                 //Object obj = Activator.CreateInstance(type);
 
+                //this is where I save the delegates
                 setup = (setupDelegate)Delegate.CreateDelegate(typeof(setupDelegate), type.GetMethod("setup"));
                 loop = (loopDelegate)Delegate.CreateDelegate(typeof(loopDelegate), type.GetMethod("loop"));
             }
