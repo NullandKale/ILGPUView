@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         xmlns:UI="clr-namespace:ILGPUView.UI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="ILGPUView" Height="450" Width="800">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" MinHeight="20"/>
@@ -22,7 +22,7 @@
             </ComboBox>
             <Button x:Name="runButton" Content="Run" Padding="10 0" Margin="10 0" Click="Run_Click"/>
             <Button Content="Compile" Padding="10 0" Margin="10 0" Click="Compile_Click"/>
-            <Label x:Name="status" Content="OK" Padding="10 0" Margin="10 0" VerticalAlignment="Center"/>
+            <Label x:Name="status" Content="Press Compile then Run" Padding="10 0" Margin="10 0" VerticalAlignment="Center"/>
         </StackPanel>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
