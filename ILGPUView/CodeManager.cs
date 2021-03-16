@@ -12,15 +12,16 @@ using ILGPU.Runtime.Cuda;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
+using ILGPUViewTest;
 
 namespace ILGPUView
 {
     public enum AcceleratorType
     {
-        Default,
-        CPU,
-        Cuda,
-        OpenCL
+        Default = 0,
+        CPU = 1,
+        Cuda = 2,
+        OpenCL = 3
     }
 
     public class CodeManager
@@ -29,24 +30,49 @@ namespace ILGPUView
         public Accelerator accelerator;
 
         public MemoryStream compiledCode;
-        public setupDelegate setup;
-        public loopDelegate loop;
+
+        public setupDelegate setupUserCode;
+        public loopDelegate loopUserCode;
+        public disposeDelegate disposeUserCode;
 
         public CodeManager()
         {
-            InitializeILGPU(AcceleratorType.CPU);
-
-            //compiled at built time
-            ILGPUViewTest.Test.setup(accelerator, 100, 100);
-
-            //compiled at run time
-            CompileCode(Templates.codeTemplate);
-            setup(accelerator, 100, 100);
         }
 
-        private bool InitializeILGPU(AcceleratorType type)
+        public void dispose()
         {
-            context = new Context(ContextFlags.EnableDebugSymbols | ContextFlags.EnableKernelDebugInformation);
+            if(disposeUserCode != null)
+            {
+                disposeUserCode();
+            }
+
+            if (accelerator != null)
+            {
+                accelerator.Dispose();
+                context.Dispose();
+            }
+        }
+
+        public string getDesc(AcceleratorType type)
+        {
+            switch (type)
+            {
+                case AcceleratorType.Default:
+                case AcceleratorType.CPU:
+                    return CPUAccelerator.Accelerators.FirstOrDefault().ToString();
+                case AcceleratorType.Cuda:
+                    return CudaAccelerator.CudaAccelerators.FirstOrDefault().ToString();
+                case AcceleratorType.OpenCL:
+                    return CLAccelerator.AllCLAccelerators.FirstOrDefault().ToString();
+            }
+
+            return "";
+
+        }
+
+        public bool InitializeILGPU(AcceleratorType type)
+        {
+            context = new Context();
 
             switch (type)
             {
@@ -67,61 +93,79 @@ namespace ILGPUView
             return true;
         }
 
-        private void CompileCode(string s)
+        public bool CompileCode(string s, out string err)
         {
-            // The following is magic taken from https://stackoverflow.com/a/29417053/1500733
-
-            // define source code, then parse it (to the type used for compilation)
-            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(s);
-
-            // define other necessary objects for compilation
-            string assemblyName = Path.GetRandomFileName();
-            MetadataReference[] references = new MetadataReference[]
+            try
             {
+                // The following is magic taken from https://stackoverflow.com/a/29417053/1500733
+
+                // define source code, then parse it (to the type used for compilation)
+                SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(s);
+
+                // define other necessary objects for compilation
+                string assemblyName = Path.GetRandomFileName();
+                MetadataReference[] references = new MetadataReference[]
+                {
                 MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Context).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Trace).Assembly.Location),
                 MetadataReference.CreateFromFile(Assembly.Load("netstandard, Version=2.0.0.0").Location),
                 MetadataReference.CreateFromFile(Assembly.Load("System.Runtime, Version=5.0.0.0").Location),
-            };
+                };
 
-            // analyse and generate IL code from syntax tree
-            CSharpCompilation compilation = CSharpCompilation.Create(
-                assemblyName,
-                syntaxTrees: new[] { syntaxTree },
-                references: references,
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+                // analyse and generate IL code from syntax tree
+                CSharpCompilation compilation = CSharpCompilation.Create(
+                    assemblyName,
+                    syntaxTrees: new[] { syntaxTree },
+                    references: references,
+                    options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-            //I save the memoryStream so that I can cache function delegates and call them
-            compiledCode = new MemoryStream();
-            EmitResult result = compilation.Emit(compiledCode);
+                //I save the memoryStream so that I can cache function delegates and call them
+                compiledCode = new MemoryStream();
+                EmitResult result = compilation.Emit(compiledCode);
 
-            if (!result.Success)
-            {
-                // handle exceptions
-                IEnumerable<Diagnostic> failures = result.Diagnostics.Where(diagnostic =>
-                    diagnostic.IsWarningAsError ||
-                    diagnostic.Severity == DiagnosticSeverity.Error);
-
-                foreach (Diagnostic diagnostic in failures)
+                if (!result.Success)
                 {
-                    Trace.WriteLine(diagnostic.Id + ": " + diagnostic.GetMessage());
+                    // handle exceptions
+                    IEnumerable<Diagnostic> failures = result.Diagnostics.Where(diagnostic =>
+                        diagnostic.IsWarningAsError ||
+                        diagnostic.Severity == DiagnosticSeverity.Error);
+
+                    err = "";
+
+                    foreach (Diagnostic diagnostic in failures)
+                    {
+                        err += diagnostic.Id + ": " + diagnostic.GetMessage() + "\n";
+                        Trace.WriteLine(diagnostic.Id + ": " + diagnostic.GetMessage());
+                    }
+
+                    return false;
+                }
+                else
+                {
+                    // load this 'virtual' DLL so that we can use
+                    compiledCode.Seek(0, SeekOrigin.Begin);
+                    Assembly assembly = Assembly.Load(compiledCode.ToArray());
+
+                    // create instance of the desired class and call the desired function
+                    Type type = assembly.GetType("ILGPUViewTest.Test");
+                    //Object obj = Activator.CreateInstance(type);
+
+                    //this is where I save the delegates
+                    setupUserCode = (setupDelegate)Delegate.CreateDelegate(typeof(setupDelegate), type.GetMethod("setup"));
+                    loopUserCode = (loopDelegate)Delegate.CreateDelegate(typeof(loopDelegate), type.GetMethod("loop"));
+                    disposeUserCode = (disposeDelegate)Delegate.CreateDelegate(typeof(disposeDelegate), type.GetMethod("dispose"));
+
+                    err = "";
+
+                    return true;
                 }
             }
-            else
+            catch(Exception e)
             {
-                // load this 'virtual' DLL so that we can use
-                compiledCode.Seek(0, SeekOrigin.Begin);
-                Assembly assembly = Assembly.Load(compiledCode.ToArray());
-
-                // create instance of the desired class and call the desired function
-                Type type = assembly.GetType("ILGPUViewTest.Test");
-                //Object obj = Activator.CreateInstance(type);
-
-                //this is where I save the delegates
-                setup = (setupDelegate)Delegate.CreateDelegate(typeof(setupDelegate), type.GetMethod("setup"));
-                loop = (loopDelegate)Delegate.CreateDelegate(typeof(loopDelegate), type.GetMethod("loop"));
+                err = e.ToString();
+                return false;
             }
 
         }
