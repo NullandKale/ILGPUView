@@ -1,0 +1,3 @@
+[submodule "ILGPU.Samples"]
+	path = ILGPU.Samples
+	url = https://github.com/m4rs-mt/ILGPU.Samples.git
