@@ -12,4 +12,8 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
   </ItemGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy &quot;$(SolutionDir)ILGPU.Samples\Src\&quot; &quot;$(OutDir)Samples\&quot; /E /Y" />
+  </Target>
+
 </Project>

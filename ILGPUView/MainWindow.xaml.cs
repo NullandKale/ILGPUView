@@ -28,11 +28,11 @@ namespace ILGPUView
         {
             InitializeComponent();
 
-            render.onResolutionChanged = onResolutionChanged;
+            outputTabs.render.onResolutionChanged = onResolutionChanged;
 
             code = new CodeManager();
-            codeblock.Text = Templates.codeTemplate;
-            codeblock.TextChanged += Codeblock_TextChanged;
+            fileTabs.defaultCodeBlock.Text = Templates.codeTemplate;
+            fileTabs.defaultCodeBlock.TextChanged += Codeblock_TextChanged;
 
             for(int i = 0; i < 4; i++)
             {
@@ -48,27 +48,27 @@ namespace ILGPUView
             {
                 if(DEBUG)
                 {
-                    Test.setup(code.accelerator, render.width, render.height);
+                    Test.setup(code.accelerator, outputTabs.render.width, outputTabs.render.height);
                 }
                 else
                 {
-                    code.setupUserCode(code.accelerator, render.width, render.height);
+                    code.setupUserCode(code.accelerator, outputTabs.render.width, outputTabs.render.height);
                 }
 
                 while (isRunning)
                 {
                     if (DEBUG)
                     {
-                        isRunning = Test.loop(code.accelerator, ref render.framebuffer);
+                        isRunning = Test.loop(code.accelerator, ref outputTabs.render.framebuffer);
                     }
                     else
                     {
-                        isRunning = code.loopUserCode(code.accelerator, ref render.framebuffer);
+                        isRunning = code.loopUserCode(code.accelerator, ref outputTabs.render.framebuffer);
                     }
 
                     Dispatcher.InvokeAsync(() =>
                     {
-                        render.update(ref render.framebuffer);
+                        outputTabs.render.update(ref outputTabs.render.framebuffer);
                     });
                     Thread.Sleep(10);
                 }
@@ -89,14 +89,14 @@ namespace ILGPUView
                 codeRunnable = false;
                 Dispatcher.InvokeAsync(() =>
                 {
-                    error.Text = e.ToString();
+                    outputTabs.error.Text = e.ToString();
                 });
             }
         }
 
         private void onResolutionChanged(int width, int height)
         {
-            resolution.Content = width + " " + height + " @ " + render.scale + "x";
+            resolution.Content = width + " " + height + " @ " + outputTabs.render.scale + "x";
         }
 
         private void Codeblock_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
@@ -126,7 +126,7 @@ namespace ILGPUView
 
             status.Content = "Compiling";
 
-            string s = codeblock.Text;
+            string s = fileTabs.defaultCodeBlock.Text;
             AcceleratorType accelerator = (AcceleratorType)acceleratorPicker.SelectedIndex;
 
             Task.Run(() =>
@@ -136,7 +136,7 @@ namespace ILGPUView
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        error.Text = err;
+                        outputTabs.error.Text = err;
                         status.Content = "Compiled " + s.Split("\n").Length + " lines OK";
                         codeRunnable = true;
                     });
@@ -145,7 +145,7 @@ namespace ILGPUView
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        error.Text = err;
+                        outputTabs.error.Text = err;
                         status.Content = "Failed to compile";
                     });
                 }

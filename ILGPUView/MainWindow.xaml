@@ -10,10 +10,36 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" MinHeight="20"/>
             <RowDefinition Height="*" MinHeight="200"/>
+            <RowDefinition Height="auto" MinHeight="20"/>
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Label x:Name="resolution" Margin="10 0"/>
-            <Label Content="Accelerator type: "/>
+        <ToolBar Grid.Row="0">
+            <Menu>
+                <MenuItem Header="File">
+                    <MenuItem Header="New"/>
+                    <MenuItem Header="Open"/>
+                    <MenuItem Header="Examples"/>
+                </MenuItem>
+            </Menu>
+            <Menu>
+                <MenuItem Header="Edit">
+                    <MenuItem Header="Undo"/>
+                    <MenuItem Header="Redo"/>
+                    <MenuItem Header="Examples"/>
+                </MenuItem>
+            </Menu>
+        </ToolBar>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" MinWidth="128"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition MinHeight="128"/>
+            </Grid.RowDefinitions>
+            <UI:OutputTabs x:Name="outputTabs" Grid.Column="0"/>
+            <UI:FileTabs x:Name="fileTabs" Grid.Column="1"/>
+        </Grid>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Stretch">
             <ComboBox x:Name="acceleratorPicker" MinWidth="80" Margin="0 0 10 0">
                 <ComboBoxItem x:Name="aPick0" IsSelected="True" Content="Default"/>
                 <ComboBoxItem x:Name="aPick1" Content="CPU"/>
@@ -23,20 +49,7 @@
             <Button x:Name="runButton" Content="Run" Padding="10 0" Margin="10 0" Click="Run_Click"/>
             <Button Content="Compile" Padding="10 0" Margin="10 0" Click="Compile_Click"/>
             <Label x:Name="status" Content="Press Compile then Run" Padding="10 0" Margin="10 0" VerticalAlignment="Center"/>
+            <Label x:Name="resolution" Margin="10 0" HorizontalAlignment="Right" HorizontalContentAlignment="Right"/>
         </StackPanel>
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*" MinWidth="128"/>
-                <ColumnDefinition Width="1*"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition MinHeight="128"/>
-            </Grid.RowDefinitions>
-            <UI:RenderFrame x:Name="render" Grid.Column="0"/>
-            <TextBlock x:Name="error" Grid.Column="0" Foreground="White"/>
-            <ScrollViewer Grid.Column="1">
-                <TextBox Name="codeblock" AcceptsReturn="True" AcceptsTab="True" Background="Black" Foreground="White" Padding="10 0 0 0"/>
-            </ScrollViewer>
-        </Grid>
     </Grid>
 </Window>
