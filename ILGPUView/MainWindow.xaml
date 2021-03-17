@@ -17,14 +17,16 @@
                 <MenuItem Header="File">
                     <MenuItem Header="New"/>
                     <MenuItem Header="Open"/>
-                    <MenuItem Header="Examples"/>
+                    <MenuItem Header="Examples">
+                        <MenuItem x:Name="samples" Header="ILGPU.Samples"/>
+                        <MenuItem x:Name="templates" Header="Templates"/>
+                    </MenuItem>
                 </MenuItem>
             </Menu>
             <Menu>
                 <MenuItem Header="Edit">
                     <MenuItem Header="Undo"/>
                     <MenuItem Header="Redo"/>
-                    <MenuItem Header="Examples"/>
                 </MenuItem>
             </Menu>
         </ToolBar>

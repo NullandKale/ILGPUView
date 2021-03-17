@@ -6,11 +6,6 @@
              xmlns:local="clr-namespace:ILGPUView.UI"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <TabControl>
-        <TabItem Header="New File">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                <TextBox x:Name="defaultCodeBlock" AcceptsReturn="True" AcceptsTab="True" Background="Black" Foreground="White" Padding="10 0 0 0"/>
-            </ScrollViewer>
-        </TabItem>
+    <TabControl x:Name="files">
     </TabControl>
 </UserControl>

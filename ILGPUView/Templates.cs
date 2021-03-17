@@ -9,6 +9,9 @@ namespace ILGPUView
     public delegate void setupDelegate(Accelerator accelerator, int width, int height);
     public delegate bool loopDelegate(Accelerator accelerator, ref byte[] bitmap);
     public delegate void disposeDelegate();
+
+    public delegate void terminalDelegate();
+
     public class Templates
     {
         public static readonly string codeTemplate = @"

@@ -16,14 +16,6 @@ using ILGPUViewTest;
 
 namespace ILGPUView
 {
-    public enum AcceleratorType
-    {
-        Default = 0,
-        CPU = 1,
-        Cuda = 2,
-        OpenCL = 3
-    }
-
     public class CodeManager
     {
         public Context context;
@@ -53,47 +45,47 @@ namespace ILGPUView
             }
         }
 
-        public string getDesc(AcceleratorType type)
-        {
-            switch (type)
-            {
-                case AcceleratorType.Default:
-                case AcceleratorType.CPU:
-                    return CPUAccelerator.Accelerators.FirstOrDefault().ToString();
-                case AcceleratorType.Cuda:
-                    return CudaAccelerator.CudaAccelerators.FirstOrDefault().ToString();
-                case AcceleratorType.OpenCL:
-                    return CLAccelerator.AllCLAccelerators.FirstOrDefault().ToString();
-            }
+        //public string getDesc(AcceleratorType type)
+        //{
+        //    switch (type)
+        //    {
+        //        case AcceleratorType.Default:
+        //        case AcceleratorType.CPU:
+        //            return CPUAccelerator.Accelerators.FirstOrDefault().ToString();
+        //        case AcceleratorType.Cuda:
+        //            return CudaAccelerator.CudaAccelerators.FirstOrDefault().ToString();
+        //        case AcceleratorType.OpenCL:
+        //            return CLAccelerator.AllCLAccelerators.FirstOrDefault().ToString();
+        //    }
 
-            return "";
+        //    return "";
 
-        }
+        //}
 
-        public bool InitializeILGPU(AcceleratorType type)
-        {
-            context = new Context();
+        //public bool InitializeILGPU(AcceleratorType type)
+        //{
+        //    context = new Context();
 
-            switch (type)
-            {
-                case AcceleratorType.Default:
-                    accelerator = new CPUAccelerator(context);
-                    break;
-                case AcceleratorType.CPU:
-                    accelerator = new CPUAccelerator(context);
-                    break;
-                case AcceleratorType.Cuda:
-                    accelerator = new CudaAccelerator(context);
-                    break;
-                case AcceleratorType.OpenCL:
-                    accelerator = new CLAccelerator(context, CLAccelerator.AllCLAccelerators.FirstOrDefault());
-                    break;
-            }
+        //    switch (type)
+        //    {
+        //        case AcceleratorType.Default:
+        //            accelerator = new CPUAccelerator(context);
+        //            break;
+        //        case AcceleratorType.CPU:
+        //            accelerator = new CPUAccelerator(context);
+        //            break;
+        //        case AcceleratorType.Cuda:
+        //            accelerator = new CudaAccelerator(context);
+        //            break;
+        //        case AcceleratorType.OpenCL:
+        //            accelerator = new CLAccelerator(context, CLAccelerator.AllCLAccelerators.FirstOrDefault());
+        //            break;
+        //    }
 
-            return true;
-        }
+        //    return true;
+        //}
 
-        public bool CompileCode(string s, out string err)
+        public bool CompileCode(string s)
         {
             try
             {
@@ -109,7 +101,7 @@ namespace ILGPUView
                 MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Context).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Trace).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
                 MetadataReference.CreateFromFile(Assembly.Load("netstandard, Version=2.0.0.0").Location),
                 MetadataReference.CreateFromFile(Assembly.Load("System.Runtime, Version=5.0.0.0").Location),
                 };
@@ -132,12 +124,9 @@ namespace ILGPUView
                         diagnostic.IsWarningAsError ||
                         diagnostic.Severity == DiagnosticSeverity.Error);
 
-                    err = "";
-
                     foreach (Diagnostic diagnostic in failures)
                     {
-                        err += diagnostic.Id + ": " + diagnostic.GetMessage() + "\n";
-                        Trace.WriteLine(diagnostic.Id + ": " + diagnostic.GetMessage());
+                        Console.WriteLine(diagnostic.Id + ": " + diagnostic.GetMessage());
                     }
 
                     return false;
@@ -157,14 +146,12 @@ namespace ILGPUView
                     loopUserCode = (loopDelegate)Delegate.CreateDelegate(typeof(loopDelegate), type.GetMethod("loop"));
                     disposeUserCode = (disposeDelegate)Delegate.CreateDelegate(typeof(disposeDelegate), type.GetMethod("dispose"));
 
-                    err = "";
-
                     return true;
                 }
             }
             catch(Exception e)
             {
-                err = e.ToString();
+                Console.WriteLine(e.ToString());
                 return false;
             }
 
