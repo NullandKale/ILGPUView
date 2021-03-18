@@ -1,0 +1,18 @@
+﻿<Window x:Class="ILGPUView.UI.SaveFileWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ILGPUView.UI"
+        mc:Ignorable="d"
+        Title="Save File?" Height="120" Width="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Label x:Name="label" Content=" has unsaved changes, would you like to save?" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0"/>
+        <Button x:Name="Save" Content="Create" Grid.Row="1" HorizontalAlignment="Left" Padding="20 4" Margin="20 10" VerticalAlignment="Center" Click="Save_Click"/>
+        <Button x:Name="Cancel" Content="Cancel" Grid.Row="1" HorizontalAlignment="Right" Padding="20 4" Margin="20 10" VerticalAlignment="Center" Click="Cancel_Click"/>
+    </Grid>
+</Window>

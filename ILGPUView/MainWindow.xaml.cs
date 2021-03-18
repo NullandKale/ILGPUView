@@ -1,6 +1,9 @@
 ﻿using ILGPUView.Files;
+using ILGPUView.UI;
 using ILGPUViewTest;
+using Microsoft.Win32;
 using System;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -17,6 +20,8 @@ namespace ILGPUView
     /// </summary>
     public partial class MainWindow : Window
     {
+        public static bool sampleTestMode = false;
+
         FileManager files;
         FileRunner fileRunner;
 
@@ -27,6 +32,7 @@ namespace ILGPUView
             outputTabs.render.onResolutionChanged = onResolutionChanged;
 
             fileTabs.onCurrentFileUpdated = onCurrentFileUpdated;
+            fileTabs.onFileChanged = onFileChanged;
 
             files = new FileManager(fileTabs, onSampleSearchComplete);
 
@@ -36,6 +42,15 @@ namespace ILGPUView
             }
 
             Closed += MainWindow_Closed;
+        }
+
+        private void onFileChanged()
+        {
+            if (fileRunner != null)
+            {
+                fileRunner.Stop();
+                fileRunner = null;
+            }
         }
 
         private void onCurrentFileUpdated()
@@ -71,17 +86,10 @@ namespace ILGPUView
                     samples.Items.Add(sampleItem);
                 }
 
-                foreach (string s in files.getTemplateNames())
+                if(sampleTestMode)
                 {
-                    string Header = s;
-                    MenuItem sampleItem = new MenuItem();
-                    sampleItem.Header = Header;
-                    sampleItem.Click += (object sender, RoutedEventArgs e) =>
-                    {
-                        files.LoadTemplate(Header);
-                    };
-
-                    templates.Items.Add(sampleItem);
+                    files.OpenAllSamples();
+                    Console.WriteLine("START SAMPLE" + fileTabs.file.assemblyNamespace);
                 }
             });
         }
@@ -98,9 +106,15 @@ namespace ILGPUView
         {
             Dispatcher.InvokeAsync(() =>
             {
-                status.Content = "Stopped - Still Compiled";
+                status.Content = "Stopped";
                 if (fileRunner != null)
                 {
+                    if(sampleTestMode)
+                    {
+                        Console.WriteLine("END SAMPLE: " + fileRunner.code.assemblyNamespace);
+                        fileTabs.CloseCodeFile(fileRunner.code);
+                        Console.WriteLine("START SAMPLE" + fileTabs.file.assemblyNamespace);
+                    }
                     fileRunner = null;
                 }
                 runButton.Content = "Run";
@@ -129,6 +143,7 @@ namespace ILGPUView
                     {
                         outputTabs.log.clear();
                         runButton.Content = "Stop";
+                        status.Content = "Running";
                         fileRunner = new FileRunner(fileTabs.file, outputTabs, (AcceleratorType)acceleratorPicker.SelectedIndex, OnRunStop, FrameBufferSwap);
                         fileRunner.Run();
                     }
@@ -152,10 +167,65 @@ namespace ILGPUView
                                 Dispatcher.Invoke(() =>
                                 {
                                     status.Content = "Failed to compile";
+                                    if (sampleTestMode)
+                                    {
+                                        Console.WriteLine("END SAMPLE: " + fileTabs.file.assemblyNamespace);
+                                        fileTabs.CloseCodeFile(fileTabs.file);
+                                        Console.WriteLine("START SAMPLE" + fileTabs.file.assemblyNamespace);
+                                    }
                                 });
                             }
                         });
 
+                    }
+                }
+            }
+        }
+
+        private void BasicBitmap_Click(object sender, RoutedEventArgs e)
+        {
+            NewFileWindow nfw = new NewFileWindow(OutputType.bitmap);
+            if(nfw.ShowDialog() == true)
+            {
+                fileTabs.AddCodeFile(new CodeFile(nfw.filename, OutputType.bitmap, Templates.bitmapTemplate));
+            }
+        }
+
+        private void BasicTerminal_Click(object sender, RoutedEventArgs e)
+        {
+            NewFileWindow nfw = new NewFileWindow(OutputType.terminal);
+            if (nfw.ShowDialog() == true)
+            {
+                fileTabs.AddCodeFile(new CodeFile(nfw.filename, OutputType.terminal, Templates.terminalTemplate));
+            }
+        }
+
+        private void OpenBFile_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string filename = openFileDialog.FileName;
+                CodeFile file = new CodeFile(Path.GetFileName(filename), filename.Substring(0, filename.Length - Path.GetFileName(filename).Length), OutputType.bitmap);
+                if(file.TryLoad())
+                {
+                    fileTabs.AddCodeFile(file);
+                }
+            }
+        }
+
+        private void OpenTFile_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+            {
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    string filename = openFileDialog.FileName;
+                    CodeFile file = new CodeFile(Path.GetFileName(filename), filename.Substring(0, filename.Length - Path.GetFileName(filename).Length), OutputType.terminal);
+                    if (file.TryLoad())
+                    {
+                        fileTabs.AddCodeFile(file);
                     }
                 }
             }

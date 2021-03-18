@@ -37,9 +37,12 @@ namespace ILGPUView.Files
             }
         }
 
-        public List<string> getTemplateNames()
+        public void OpenAllSamples()
         {
-            return new List<string>(new string[] { "Bitmap", "Console" });
+            foreach(string s in getSampleNames())
+            {
+                LoadSample(s);
+            }
         }
 
         public void LoadSample(string name)
@@ -50,16 +53,6 @@ namespace ILGPUView.Files
                 {
                     fileTabs.AddCodeFile(samples[name]);
                 }
-            }
-        }
-
-        public void LoadTemplate(string name)
-        {
-            switch(name)
-            {
-                case "Bitmap":
-                    fileTabs.AddCodeFile(new CodeFile("BitmapTemplate.cs", OutputType.bitmap, Templates.codeTemplate));
-                    break;
             }
         }
 
@@ -78,7 +71,7 @@ namespace ILGPUView.Files
                         {
                             if (File.Exists(directories[i] + "\\Program.cs"))
                             {
-                                CodeFile code = new CodeFile("Program.cs", "Program", directories[i], OutputType.terminal);
+                                CodeFile code = new CodeFile("Program.cs", directories[i], OutputType.terminal);
                                 samples.Add(directories[i], code);
                             }
                             else

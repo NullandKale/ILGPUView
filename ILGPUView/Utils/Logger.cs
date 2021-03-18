@@ -9,6 +9,8 @@ namespace ILGPUView.Utils
 {
     public class Logger : TextWriter
     {
+        public static Logger staticInstance = null;
+
         private readonly int textMaxLength = 10_000_000;
         public string text { get; private set; }
 
@@ -19,12 +21,21 @@ namespace ILGPUView.Utils
             this.onUpdate = onUpdate;
             text = "";
             Console.SetOut(this);
+            staticInstance = this;
+        }
+
+        public void Save()
+        {
+            File.WriteAllText(".\\log.txt", text);
         }
 
         public void clear()
         {
-            text = "";
-            update();
+            if(!MainWindow.sampleTestMode)
+            {
+                text = "";
+                update();
+            }
         }
 
         private void update()

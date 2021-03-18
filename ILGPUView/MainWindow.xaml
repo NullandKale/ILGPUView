@@ -5,31 +5,36 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         xmlns:UI="clr-namespace:ILGPUView.UI"
         mc:Ignorable="d"
-        Title="ILGPUView" Height="450" Width="800">
+        Title="ILGPUView" Height="450" Width="800" WindowState="Maximized">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" MinHeight="20"/>
             <RowDefinition Height="*" MinHeight="200"/>
             <RowDefinition Height="auto" MinHeight="20"/>
         </Grid.RowDefinitions>
-        <ToolBar Grid.Row="0" HorizontalContentAlignment="Stretch">
-            <Menu>
-                <MenuItem Header="File">
-                    <MenuItem Header="New"/>
-                    <MenuItem Header="Open"/>
-                    <MenuItem Header="Examples">
-                        <MenuItem x:Name="samples" Header="ILGPU.Samples"/>
-                        <MenuItem x:Name="templates" Header="Templates"/>
+        <ToolBarTray IsLocked="True">
+            <ToolBar Grid.Row="0" HorizontalContentAlignment="Stretch">
+                <Menu>
+                    <MenuItem Header="File">
+                        <MenuItem Header="New">
+                            <MenuItem Header="Bitmap File" Click="BasicBitmap_Click"/>
+                            <MenuItem Header="Terminal File" Click="BasicTerminal_Click"/>
+                        </MenuItem>
+                        <MenuItem Header="Open Bitmap File" Click="OpenBFile_Click"/>
+                        <MenuItem Header="Open Terminal File" Click="OpenTFile_Click"/>
+                        <MenuItem Header="Examples">
+                            <MenuItem x:Name="samples" Header="ILGPU.Samples"/>
+                        </MenuItem>
                     </MenuItem>
-                </MenuItem>
-            </Menu>
-            <Menu>
-                <MenuItem Header="Edit">
-                    <MenuItem Header="Undo"/>
-                    <MenuItem Header="Redo"/>
-                </MenuItem>
-            </Menu>
-        </ToolBar>
+                </Menu>
+                <Menu>
+                    <MenuItem Header="Edit">
+                        <MenuItem Header="Undo"/>
+                        <MenuItem Header="Redo"/>
+                    </MenuItem>
+                </Menu>
+            </ToolBar>
+        </ToolBarTray>
         <StackPanel Grid.Row="0" HorizontalAlignment="Right" Orientation="Horizontal">
             <ComboBox x:Name="acceleratorPicker" MinWidth="80" Margin="10 0 10 0">
                 <ComboBoxItem x:Name="aPick0" IsSelected="True" Content="Default "/>

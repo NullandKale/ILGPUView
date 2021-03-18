@@ -31,6 +31,7 @@ namespace ILGPUView.Files
 
         public OutputType type;
 
+        public bool needsSave = false;
         public bool loaded = false;
         public bool compiled = false;
 
@@ -41,10 +42,9 @@ namespace ILGPUView.Files
         public disposeDelegate userCodeDispose;
         public terminalDelegate userCodeMain;
 
-        public CodeFile(string name, string assemblyNamespace, string path, OutputType type)
+        public CodeFile(string name, string path, OutputType type)
         {
             this.path = path;
-            this.assemblyNamespace = assemblyNamespace;
             this.name = name;
             this.type = type;
         }
@@ -54,11 +54,13 @@ namespace ILGPUView.Files
             this.name = name;
             this.type = type;
             this.fileContents = fileContents;
+            assemblyNamespace = Regex.Match(fileContents, "(?<=\\bnamespace\\s+)\\p{L}+").Value;
         }
 
         public void updateFileContents(string newFileContents)
         {
             fileContents = newFileContents;
+            needsSave = true;
             compiled = false;
             loaded = false;
         }
@@ -71,6 +73,7 @@ namespace ILGPUView.Files
                 try
                 {
                     File.WriteAllText(totalPath, fileContents);
+                    needsSave = true;
                 }
                 catch(Exception e)
                 {
@@ -94,13 +97,8 @@ namespace ILGPUView.Files
                 try
                 {
                     fileContents = File.ReadAllText(totalPath);
-
-                    if(type == OutputType.terminal)
-                    {
-                        assemblyNamespace = Regex.Match(fileContents, "(?<=\\bnamespace\\s+)\\p{L}+").Value;
-
-                    }
-
+                    assemblyNamespace = Regex.Match(fileContents, "(?<=\\bnamespace\\s+)\\p{L}+").Value;
+                    needsSave = false;
                 }
                 catch (Exception e)
                 {
@@ -188,15 +186,13 @@ namespace ILGPUView.Files
             {
                 compiledCode.Seek(0, SeekOrigin.Begin);
                 Assembly assembly = Assembly.Load(compiledCode.ToArray());
-
+                Type LoadedType = assembly.GetType(assemblyNamespace + (assemblyNamespace == "ILGPUViewTest" ? ".Test" : ".Program"));
                 switch (type)
                 {
                     case OutputType.bitmap:
-                        Type bitmapAssembly = assembly.GetType("ILGPUViewTest.Test");
-
-                        MethodInfo setup = bitmapAssembly.GetMethod("setup");
-                        MethodInfo loop = bitmapAssembly.GetMethod("loop");
-                        MethodInfo dispose = bitmapAssembly.GetMethod("dispose");
+                        MethodInfo setup = LoadedType.GetMethod("setup");
+                        MethodInfo loop = LoadedType.GetMethod("loop");
+                        MethodInfo dispose = LoadedType.GetMethod("dispose");
 
                         if (setup != null && loop != null && dispose != null)
                         {
@@ -213,8 +209,7 @@ namespace ILGPUView.Files
 
                         break;
                     case OutputType.terminal:
-                        Type TerminalAssembly = assembly.GetType(assemblyNamespace + ".Program");
-                        MethodInfo main = TerminalAssembly.GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase | BindingFlags.IgnoreReturn);
+                        MethodInfo main = LoadedType.GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase | BindingFlags.IgnoreReturn);
                         if(main != null)
                         {
                             userCodeMain = (terminalDelegate)Delegate.CreateDelegate(typeof(terminalDelegate), main);
