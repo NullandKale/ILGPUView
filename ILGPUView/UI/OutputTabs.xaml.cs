@@ -39,10 +39,9 @@ namespace ILGPUView.UI
         {
             if(logTask == null || logTask.Status == DispatcherOperationStatus.Completed || logTask.Status == DispatcherOperationStatus.Aborted)
             {
-                string s = log.text;
                 logTask = Dispatcher.InvokeAsync(() =>
                 {
-                    terminal.Text = s;
+                    terminal.Text = log.text;
                     terminalScroll.ScrollToBottom();
                 });
             }
