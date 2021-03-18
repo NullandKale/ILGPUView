@@ -141,6 +141,8 @@ namespace ILGPUView.Files
                     if(code.type == OutputType.terminal)
                     {
                         code.userCodeMain();
+                        isRunning = false;
+                        onRunStop();
                         return;
                     }
                     else

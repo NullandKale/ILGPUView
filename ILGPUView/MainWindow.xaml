@@ -12,7 +12,7 @@
             <RowDefinition Height="*" MinHeight="200"/>
             <RowDefinition Height="auto" MinHeight="20"/>
         </Grid.RowDefinitions>
-        <ToolBar Grid.Row="0">
+        <ToolBar Grid.Row="0" HorizontalContentAlignment="Stretch">
             <Menu>
                 <MenuItem Header="File">
                     <MenuItem Header="New"/>
@@ -30,6 +30,15 @@
                 </MenuItem>
             </Menu>
         </ToolBar>
+        <StackPanel Grid.Row="0" HorizontalAlignment="Right" Orientation="Horizontal">
+            <ComboBox x:Name="acceleratorPicker" MinWidth="80" Margin="10 0 10 0">
+                <ComboBoxItem x:Name="aPick0" IsSelected="True" Content="Default "/>
+                <ComboBoxItem x:Name="aPick1" Content="CPU "/>
+                <ComboBoxItem x:Name="aPick2" Content="Cuda "/>
+                <ComboBoxItem x:Name="aPick3" Content="OpenCL "/>
+            </ComboBox>
+            <Button x:Name="runButton" Content="Compile" Padding="10 0" Margin="10 0" Click="Run_Click"/>
+        </StackPanel>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*" MinWidth="128"/>
@@ -42,15 +51,7 @@
             <UI:FileTabs x:Name="fileTabs" Grid.Column="1"/>
         </Grid>
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Stretch">
-            <ComboBox x:Name="acceleratorPicker" MinWidth="80" Margin="0 0 10 0">
-                <ComboBoxItem x:Name="aPick0" IsSelected="True" Content="Default"/>
-                <ComboBoxItem x:Name="aPick1" Content="CPU"/>
-                <ComboBoxItem x:Name="aPick2" Content="Cuda"/>
-                <ComboBoxItem x:Name="aPick3" Content="OpenCL"/>
-            </ComboBox>
-            <Button x:Name="runButton" Content="Run" Padding="10 0" Margin="10 0" Click="Run_Click"/>
-            <Button Content="Compile" Padding="10 0" Margin="10 0" Click="Compile_Click"/>
-            <Label x:Name="status" Content="Press Compile then Run" Padding="10 0" Margin="10 0" VerticalAlignment="Center"/>
+            <Label x:Name="status" Content="Press Compile then Run" HorizontalContentAlignment="Left" VerticalAlignment="Center"/>
             <Label x:Name="resolution" Margin="10 0" HorizontalAlignment="Right" HorizontalContentAlignment="Right"/>
         </StackPanel>
     </Grid>

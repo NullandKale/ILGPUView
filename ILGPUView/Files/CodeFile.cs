@@ -1,4 +1,5 @@
 ﻿using ILGPU;
+using ILGPUView.Utils;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
@@ -138,18 +139,7 @@ namespace ILGPUView.Files
 
                 // define other necessary objects for compilation
                 string assemblyName = Path.GetRandomFileName();
-                MetadataReference[] references = new MetadataReference[]
-                {
-                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Context).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ImmutableArray).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Thread).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ThreadPriority).Assembly.Location),
-                MetadataReference.CreateFromFile(Assembly.Load("netstandard, Version=2.0.0.0").Location),
-                MetadataReference.CreateFromFile(Assembly.Load("System.Runtime, Version=5.0.0.0").Location),
-                };
+                MetadataReference[] references = AssemblyHelpers.getAsManyAsPossible().ToArray();
 
                 // analyse and generate IL code from syntax tree
                 CSharpCompilation compilation = CSharpCompilation.Create(
@@ -203,13 +193,37 @@ namespace ILGPUView.Files
                 {
                     case OutputType.bitmap:
                         Type bitmapAssembly = assembly.GetType("ILGPUViewTest.Test");
-                        userCodeSetup = (setupDelegate)Delegate.CreateDelegate(typeof(setupDelegate), bitmapAssembly.GetMethod("setup"));
-                        userCodeLoop = (loopDelegate)Delegate.CreateDelegate(typeof(loopDelegate), bitmapAssembly.GetMethod("loop"));
-                        userCodeDispose = (disposeDelegate)Delegate.CreateDelegate(typeof(disposeDelegate), bitmapAssembly.GetMethod("dispose"));
+
+                        MethodInfo setup = bitmapAssembly.GetMethod("setup");
+                        MethodInfo loop = bitmapAssembly.GetMethod("loop");
+                        MethodInfo dispose = bitmapAssembly.GetMethod("dispose");
+
+                        if (setup != null && loop != null && dispose != null)
+                        {
+
+                            userCodeSetup = (setupDelegate)Delegate.CreateDelegate(typeof(setupDelegate), setup);
+                            userCodeLoop = (loopDelegate)Delegate.CreateDelegate(typeof(loopDelegate), loop);
+                            userCodeDispose = (disposeDelegate)Delegate.CreateDelegate(typeof(disposeDelegate),dispose);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Missing or cannot find Setup, Loop, or Dispose functions");
+                            return false;
+                        }
+
                         break;
                     case OutputType.terminal:
                         Type TerminalAssembly = assembly.GetType(assemblyNamespace + ".Program");
-                        userCodeMain = (terminalDelegate)Delegate.CreateDelegate(typeof(terminalDelegate), TerminalAssembly.GetMethod("Main", BindingFlags.NonPublic));
+                        MethodInfo main = TerminalAssembly.GetMethod("Main", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase | BindingFlags.IgnoreReturn);
+                        if(main != null)
+                        {
+                            userCodeMain = (terminalDelegate)Delegate.CreateDelegate(typeof(terminalDelegate), main);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Missing or cannot find Main function");
+                            return false;
+                        }
                         break;
                 }
 

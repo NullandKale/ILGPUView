@@ -23,7 +23,7 @@ namespace ILGPUView.UI
     {
         //public List<CodeFile> displayedFiles;
         public CodeFile file;
-
+        public Action onCurrentFileUpdated;
 
         public FileTabs()
         {
@@ -41,6 +41,10 @@ namespace ILGPUView.UI
             item.Content = new FileTab(code, (string newText) =>
             {
                 code.updateFileContents(newText);
+                if(onCurrentFileUpdated != null)
+                {
+                    onCurrentFileUpdated();
+                }
             });
 
             //displayedFiles.Add(code);

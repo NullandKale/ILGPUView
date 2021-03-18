@@ -26,6 +26,8 @@ namespace ILGPUView
 
             outputTabs.render.onResolutionChanged = onResolutionChanged;
 
+            fileTabs.onCurrentFileUpdated = onCurrentFileUpdated;
+
             files = new FileManager(fileTabs, onSampleSearchComplete);
 
             for(int i = 0; i < 4; i++)
@@ -36,54 +38,16 @@ namespace ILGPUView
             Closed += MainWindow_Closed;
         }
 
-        //private void renderThreadMain()
-        //{
-        //    try
-        //    {
-        //        if(DEBUG)
-        //        {
-        //            Test.setup(code.accelerator, outputTabs.render.width, outputTabs.render.height);
-        //        }
-        //        else
-        //        {
-        //            code.setupUserCode(code.accelerator, outputTabs.render.width, outputTabs.render.height);
-        //        }
-
-        //        while (isRunning)
-        //        {
-        //            if (DEBUG)
-        //            {
-        //                isRunning = Test.loop(code.accelerator, ref outputTabs.render.framebuffer);
-        //            }
-        //            else
-        //            {
-        //                isRunning = code.loopUserCode(code.accelerator, ref outputTabs.render.framebuffer);
-        //            }
-
-        //            Dispatcher.InvokeAsync(() =>
-        //            {
-        //                outputTabs.render.update(ref outputTabs.render.framebuffer);
-        //            });
-        //            Thread.Sleep(10);
-        //        }
-
-        //        code.dispose();
-        //        isRunning = false;
-        //        codeRunnable = false;
-        //        Dispatcher.InvokeAsync(() =>
-        //        {
-        //            runButton.Content = "Run";
-        //            status.Content = "Uncompiled";
-        //        });
-        //        Thread.Sleep(2);
-        //    }
-        //    catch(Exception e)
-        //    {
-        //        isRunning = false;
-        //        codeRunnable = false;
-        //        Console.WriteLine("Render Thread Failed\n" + e.ToString());
-        //    }
-        //}
+        private void onCurrentFileUpdated()
+        {
+            if(fileRunner != null)
+            {
+                fileRunner.Stop();
+                fileRunner = null;
+            }
+            runButton.Content = "Compile";
+            status.Content = "File Changed needs Compile";
+        }
 
         private void onResolutionChanged(int width, int height)
         {
@@ -124,56 +88,22 @@ namespace ILGPUView
 
         private void MainWindow_Closed(object sender, EventArgs e)
         {
-
-        }
-
-        private void Compile_Click(object sender, RoutedEventArgs e)
-        {
-            //if(compileTask != null)
-            //{
-            //    compileTask.Wait();
-            //}
-
-            //outputTabs.log.clear();
-
-            //isRunning = false;
-            //if(renderThread != null)
-            //{
-            //    renderThread.Join();
-            //    renderThread = null;
-            //}
-
-            //status.Content = "Compiling";
-
-            //string s = "";//fileTabs.defaultCodeBlock.Text;
-            //AcceleratorType accelerator = (AcceleratorType)acceleratorPicker.SelectedIndex;
-
-            //Task.Run(() =>
-            //{
-            //    code.InitializeILGPU(accelerator);
-            //    if(code.CompileCode(s))
-            //    {
-            //        Dispatcher.Invoke(() =>
-            //        {
-            //            status.Content = "Compiled " + s.Split("\n").Length + " lines OK";
-            //            codeRunnable = true;
-            //        });
-            //    }
-            //    else
-            //    {
-            //        Dispatcher.Invoke(() =>
-            //        {
-            //            status.Content = "Failed to compile";
-            //        });
-            //    }
-            //});
+            if(fileRunner != null)
+            {
+                fileRunner.Stop();
+            }
         }
 
         private void OnRunStop()
         {
             Dispatcher.InvokeAsync(() =>
             {
-                status.Content = "Stopped";
+                status.Content = "Stopped - Still Compiled";
+                if (fileRunner != null)
+                {
+                    fileRunner = null;
+                }
+                runButton.Content = "Run";
             });
         }
 
@@ -192,23 +122,28 @@ namespace ILGPUView
                 if (fileRunner != null)
                 {
                     fileRunner.Stop();
-                    fileRunner = null;
                 }
                 else
                 {
                     if (fileTabs.file.compiled && fileTabs.file.loaded)
                     {
+                        outputTabs.log.clear();
+                        runButton.Content = "Stop";
                         fileRunner = new FileRunner(fileTabs.file, outputTabs, (AcceleratorType)acceleratorPicker.SelectedIndex, OnRunStop, FrameBufferSwap);
                         fileRunner.Run();
                     }
                     else
                     {
+                        outputTabs.log.clear();
+                        status.Content = "Compiling " + fileTabs.file.name;
+
                         Task.Run(() =>
                         {
                             if (fileTabs.file.TryCompile())
                             {
                                 Dispatcher.Invoke(() =>
                                 {
+                                    runButton.Content = "Run";
                                     status.Content = "Compiled " + fileTabs.file.fileContents.Split("\n").Length + " lines OK";
                                 });
                             }
@@ -223,34 +158,7 @@ namespace ILGPUView
 
                     }
                 }
-                
             }
-
-            //if(isRunning)
-            //{
-            //    isRunning = false;
-            //    if (renderThread != null)
-            //    {
-            //        renderThread.Join();
-            //        renderThread = null;
-            //    }
-            //}
-            //else
-            //{
-            //    if (codeRunnable)
-            //    {
-            //        isRunning = true;
-            //        renderThread = new Thread(renderThreadMain);
-            //        renderThread.Start();
-            //        runButton.Content = "Stop";
-            //        return;
-            //    }
-            //    else
-            //    {
-            //        Compile_Click(sender, e);
-            //        return;
-            //    }
-            //}
         }
     }
 }
