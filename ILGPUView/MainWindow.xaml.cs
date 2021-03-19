@@ -21,7 +21,7 @@ namespace ILGPUView
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static bool sampleTestMode = true;
+        public static bool sampleTestMode = false;
         public static Dictionary<string, string> sampleRunStatus = new Dictionary<string, string>();
 
         FileManager files;
@@ -77,12 +77,28 @@ namespace ILGPUView
             {
                 foreach (string s in files.getSampleNames())
                 {
-                    string Header = s;
+                    string Header = s.Substring(s.LastIndexOf("\\") + 1);
                     MenuItem sampleItem = new MenuItem();
-                    sampleItem.Header = Header.Substring(Header.LastIndexOf("\\") + 1);
+
+                    if(Header == "Mandelbrot")
+                    {
+                        Header += " needs forms (Fails to compile)";
+                    }
+                    if (Header == "AlgorithmsReduce")
+                    {
+                        Header += " needs cuda 10 sdk";
+                    }
+                    if (Header == "MatrixMultiply" || Header == "DynamicSharedMemory")
+                    {
+                        Header += " BUG (Fails to compile)";
+                    }
+
+                    sampleItem.Header = Header;
+
+                    string sRef = s;
                     sampleItem.Click += (object sender, RoutedEventArgs e) =>
                     {
-                        files.LoadSample(Header);
+                        files.LoadSample(sRef);
                     };
 
                     samples.Items.Add(sampleItem);
@@ -170,7 +186,7 @@ namespace ILGPUView
                     }
                     else
                     {
-                        outputTabs.log.clear();
+                        //outputTabs.log.clear();
                         status.Content = "Compiling " + fileTabs.file.name;
 
                         Task.Run(() =>
@@ -197,7 +213,14 @@ namespace ILGPUView
                                     {
                                         if (sampleRunStatus.ContainsKey(fileTabs.file.assemblyNamespace))
                                         {
-                                            sampleRunStatus[fileTabs.file.assemblyNamespace] = "Failed to compile";
+                                            if(fileTabs.file.assemblyNamespace == "Mandelbrot")
+                                            {
+                                                sampleRunStatus[fileTabs.file.assemblyNamespace] = "Failed to compile (Mandelbrot sample requires forms.)";
+                                            }
+                                            else
+                                            {
+                                                sampleRunStatus[fileTabs.file.assemblyNamespace] = "Failed to compile";
+                                            }
                                         }
 
                                         fileTabs.CloseCodeFile(fileTabs.file);

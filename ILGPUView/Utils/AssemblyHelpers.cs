@@ -1,5 +1,4 @@
-﻿using ILGPU;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,6 +21,11 @@ namespace ILGPUView.Utils
 
             foreach(string s in locations)
             {
+                if(s == null || s.Length <= 0)
+                {
+                    continue;
+                }
+
                 string filename = s.Substring(s.LastIndexOf("\\"));
                 if (!dedupedReferences.ContainsKey(filename))
                 {
@@ -61,6 +65,23 @@ namespace ILGPUView.Utils
                 if (!assem.IsDynamic && File.Exists(assem.Location))
                 {
                     refs.Add(assem.Location);
+                    refs.AddRange(searchForMore(assem));
+                }
+            }
+
+            return refs;
+        }
+
+        public static List<string> searchForMore(Assembly root)
+        {
+            List<string> refs = new List<string>();
+
+            AssemblyName[] assems = root.GetReferencedAssemblies();
+            foreach (AssemblyName a in assems)
+            {
+                if(a.CodeBase != null && a.CodeBase.Length > 0)
+                {
+                    refs.Add(a.CodeBase);
                 }
             }
 

@@ -98,6 +98,7 @@ namespace ILGPUView.Files
                 {
                     fileContents = File.ReadAllText(totalPath);
                     assemblyNamespace = Regex.Match(fileContents, "(?<=\\bnamespace\\s+)\\p{L}+").Value;
+                    fileContents = fileContents.Insert(fileContents.IndexOf("namespace"), "[assembly: System.Runtime.CompilerServices.InternalsVisibleToAttribute(\"ILGPURuntime\")]\n");
                     needsSave = false;
                 }
                 catch (Exception e)
@@ -141,10 +142,12 @@ namespace ILGPUView.Files
 
 
                 CSharpCompilationOptions compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary).
-                    WithMetadataImportOptions(MetadataImportOptions.All);
+                    WithMetadataImportOptions(MetadataImportOptions.All).
+                    WithAllowUnsafe(true).
+                    WithMetadataReferenceResolver(new ReferenceResolver());
 
-                PropertyInfo topLevelBinderFlagsProperty = typeof(CSharpCompilationOptions).GetProperty("TopLevelBinderFlags", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
-                topLevelBinderFlagsProperty.SetValue(compilationOptions, (uint)1 << 22);
+                //PropertyInfo topLevelBinderFlagsProperty = typeof(CSharpCompilationOptions).GetProperty("TopLevelBinderFlags", BindingFlags.Instance | BindingFlags.NonPublic);
+                //topLevelBinderFlagsProperty.SetValue(compilationOptions, (uint)1 << 22);
 
                 // analyse and generate IL code from syntax tree
                 CSharpCompilation compilation = CSharpCompilation.Create(
