@@ -3,6 +3,7 @@ using ILGPUView.UI;
 using ILGPUViewTest;
 using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -20,7 +21,8 @@ namespace ILGPUView
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static bool sampleTestMode = false;
+        public static bool sampleTestMode = true;
+        public static Dictionary<string, string> sampleRunStatus = new Dictionary<string, string>();
 
         FileManager files;
         FileRunner fileRunner;
@@ -73,7 +75,7 @@ namespace ILGPUView
         {
             Dispatcher.Invoke(() =>
             {
-                foreach(string s in files.getSampleNames())
+                foreach (string s in files.getSampleNames())
                 {
                     string Header = s;
                     MenuItem sampleItem = new MenuItem();
@@ -86,10 +88,14 @@ namespace ILGPUView
                     samples.Items.Add(sampleItem);
                 }
 
-                if(sampleTestMode)
+                if (sampleTestMode)
                 {
                     files.OpenAllSamples();
-                    Console.WriteLine("START SAMPLE" + fileTabs.file.assemblyNamespace);
+                    Console.WriteLine("START SAMPLE " + fileTabs.file.assemblyNamespace);
+                    if(!sampleRunStatus.ContainsKey(fileTabs.file.assemblyNamespace))
+                    {
+                        sampleRunStatus.Add(fileTabs.file.assemblyNamespace, "Started");
+                    }
                 }
             });
         }
@@ -111,9 +117,18 @@ namespace ILGPUView
                 {
                     if(sampleTestMode)
                     {
-                        Console.WriteLine("END SAMPLE: " + fileRunner.code.assemblyNamespace);
+                        if (sampleRunStatus.ContainsKey(fileTabs.file.assemblyNamespace))
+                        {
+                            sampleRunStatus[fileTabs.file.assemblyNamespace] = fileRunner.crashed ? "Crashed" : "Finished";
+                        }
+
                         fileTabs.CloseCodeFile(fileRunner.code);
-                        Console.WriteLine("START SAMPLE" + fileTabs.file.assemblyNamespace);
+                        Console.WriteLine("START SAMPLE: " + fileTabs.file.assemblyNamespace);
+                        if (!sampleRunStatus.ContainsKey(fileTabs.file.assemblyNamespace))
+                        {
+                            sampleRunStatus.Add(fileTabs.file.assemblyNamespace, "Started");
+                        }
+                        Run_Click(null, null);
                     }
                     fileRunner = null;
                 }
@@ -144,6 +159,12 @@ namespace ILGPUView
                         outputTabs.log.clear();
                         runButton.Content = "Stop";
                         status.Content = "Running";
+
+                        if (sampleRunStatus.ContainsKey(fileTabs.file.assemblyNamespace))
+                        {
+                            sampleRunStatus[fileTabs.file.assemblyNamespace] = "Attempting to Run";
+                        }
+
                         fileRunner = new FileRunner(fileTabs.file, outputTabs, (AcceleratorType)acceleratorPicker.SelectedIndex, OnRunStop, FrameBufferSwap);
                         fileRunner.Run();
                     }
@@ -160,6 +181,11 @@ namespace ILGPUView
                                 {
                                     runButton.Content = "Run";
                                     status.Content = "Compiled " + fileTabs.file.fileContents.Split("\n").Length + " lines OK";
+                                    if (sampleRunStatus.ContainsKey(fileTabs.file.assemblyNamespace))
+                                    {
+                                        sampleRunStatus[fileTabs.file.assemblyNamespace] = "Compiled OK";
+                                    }
+                                    Run_Click(null, null);
                                 });
                             }
                             else
@@ -169,9 +195,18 @@ namespace ILGPUView
                                     status.Content = "Failed to compile";
                                     if (sampleTestMode)
                                     {
-                                        Console.WriteLine("END SAMPLE: " + fileTabs.file.assemblyNamespace);
+                                        if (sampleRunStatus.ContainsKey(fileTabs.file.assemblyNamespace))
+                                        {
+                                            sampleRunStatus[fileTabs.file.assemblyNamespace] = "Failed to compile";
+                                        }
+
                                         fileTabs.CloseCodeFile(fileTabs.file);
-                                        Console.WriteLine("START SAMPLE" + fileTabs.file.assemblyNamespace);
+                                        Console.WriteLine("START SAMPLE " + fileTabs.file.assemblyNamespace);
+                                        if (!sampleRunStatus.ContainsKey(fileTabs.file.assemblyNamespace))
+                                        {
+                                            sampleRunStatus.Add(fileTabs.file.assemblyNamespace, "Started");
+                                        }
+                                        Run_Click(null, null);
                                     }
                                 });
                             }

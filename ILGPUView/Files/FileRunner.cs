@@ -35,6 +35,7 @@ namespace ILGPUView.Files
         public AcceleratorType type;
 
         private bool isRunning = false;
+        public bool crashed = false;
         private Thread renderThread;
 
         private Action onRunStop;
@@ -142,6 +143,7 @@ namespace ILGPUView.Files
                     {
                         code.userCodeMain();
                         isRunning = false;
+                        crashed = false;
                         onRunStop();
                         return;
                     }
@@ -172,6 +174,7 @@ namespace ILGPUView.Files
             catch (Exception e)
             {
                 isRunning = false;
+                crashed = true;
                 onRunStop();
                 Console.WriteLine("Render Thread Failed\n" + e.ToString());
             }

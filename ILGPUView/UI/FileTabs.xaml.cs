@@ -72,9 +72,30 @@ namespace ILGPUView.UI
 
                 if(MainWindow.sampleTestMode && files.Items.Count == 0)
                 {
+                    Dictionary<string, int> statusCounts = new Dictionary<string, int>();
+
+                    foreach(KeyValuePair<string, string> kvp in MainWindow.sampleRunStatus)
+                    {
+                        if(!statusCounts.ContainsKey(kvp.Value))
+                        {
+                            statusCounts.Add(kvp.Value, 1);
+                        }
+                        else
+                        {
+                            statusCounts[kvp.Value] = statusCounts[kvp.Value] + 1;
+                        }
+                        Console.WriteLine("Sample: " + kvp.Key + " Status: " + kvp.Value);
+                    }
+
+                    foreach (KeyValuePair<string, int> kvp in statusCounts)
+                    {
+                        Console.WriteLine(kvp.Value + " samples with status " + kvp.Key);
+                    }
+
                     Console.WriteLine("Finished");
                     Logger.staticInstance.Save();
                     AddCodeFile(new CodeFile("Program.cs", OutputType.bitmap, Templates.bitmapTemplate));
+                    MainWindow.sampleTestMode = false;
                 }
             }
         }

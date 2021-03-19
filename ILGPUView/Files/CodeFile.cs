@@ -139,12 +139,19 @@ namespace ILGPUView.Files
                 string assemblyName = Path.GetRandomFileName();
                 MetadataReference[] references = AssemblyHelpers.getAsManyAsPossible().ToArray();
 
+
+                CSharpCompilationOptions compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary).
+                    WithMetadataImportOptions(MetadataImportOptions.All);
+
+                PropertyInfo topLevelBinderFlagsProperty = typeof(CSharpCompilationOptions).GetProperty("TopLevelBinderFlags", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
+                topLevelBinderFlagsProperty.SetValue(compilationOptions, (uint)1 << 22);
+
                 // analyse and generate IL code from syntax tree
                 CSharpCompilation compilation = CSharpCompilation.Create(
                     assemblyName,
                     syntaxTrees: new[] { syntaxTree },
                     references: references,
-                    options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+                    options: compilationOptions);
 
                 //I save the memoryStream so that I can cache function delegates and call them
                 compiledCode = new MemoryStream();
