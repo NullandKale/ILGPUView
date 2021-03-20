@@ -4,11 +4,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Threading;
 
 namespace ILGPUView.Files
 {
-    public class FileManager
+    public class SampleManager
     {
         public List<CodeFile> loadedFiles;
         public FileTabs fileTabs;
@@ -17,7 +16,7 @@ namespace ILGPUView.Files
         private Task searchTask;
         private Dictionary<string, CodeFile> samples;
 
-        public FileManager(FileTabs fileTabs, Action OnSearchDone)
+        public SampleManager(FileTabs fileTabs, Action OnSearchDone)
         {
             this.fileTabs = fileTabs;
             this.OnSearchDone = OnSearchDone;

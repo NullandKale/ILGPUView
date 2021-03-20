@@ -114,6 +114,7 @@ namespace ILGPUView.Files
             {
                 isRunning = true;
                 renderThread = new Thread(renderThreadMain);
+                renderThread.IsBackground = true;
                 renderThread.Start();
                 return true;
             }

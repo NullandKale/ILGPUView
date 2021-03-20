@@ -24,7 +24,7 @@ namespace ILGPUView
         public static bool sampleTestMode = false;
         public static Dictionary<string, string> sampleRunStatus = new Dictionary<string, string>();
 
-        FileManager files;
+        SampleManager files;
         FileRunner fileRunner;
 
         public MainWindow()
@@ -36,7 +36,7 @@ namespace ILGPUView
             fileTabs.onCurrentFileUpdated = onCurrentFileUpdated;
             fileTabs.onFileChanged = onFileChanged;
 
-            files = new FileManager(fileTabs, onSampleSearchComplete);
+            files = new SampleManager(fileTabs, onSampleSearchComplete);
 
             for(int i = 0; i < 4; i++)
             {
@@ -44,6 +44,11 @@ namespace ILGPUView
             }
 
             Closed += MainWindow_Closed;
+
+            if(!sampleTestMode)
+            {
+                fileTabs.AddCodeFile(new CodeFile("Program.cs", OutputType.bitmap, Templates.bitmapTemplate));
+            }
         }
 
         private void onFileChanged()
