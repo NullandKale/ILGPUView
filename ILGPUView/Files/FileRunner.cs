@@ -4,9 +4,11 @@ using ILGPU.Runtime.CPU;
 using ILGPU.Runtime.Cuda;
 using ILGPU.Runtime.OpenCL;
 using ILGPUView.UI;
+using ILGPUView.Utils;
 using ILGPUViewTest;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -30,6 +32,7 @@ namespace ILGPUView.Files
         public Context context;
         public Accelerator accelerator;
 
+        public FrameTimer timer;
         public CodeFile code;
         public OutputTabs output;
         public AcceleratorType type;
@@ -40,14 +43,17 @@ namespace ILGPUView.Files
 
         private Action onRunStop;
         private Action framebufferSwap;
+        private Action<TimeSpan, double> onTimersUpdate;
 
-        public FileRunner(CodeFile code, OutputTabs output, AcceleratorType type, Action onRunStop, Action framebufferSwap)
+        public FileRunner(CodeFile code, OutputTabs output, AcceleratorType type, Action onRunStop, Action framebufferSwap, Action<TimeSpan, double> onTimersUpdate)
         {
             this.code = code;
             this.output = output;
             this.type = type;
             this.onRunStop = onRunStop;
             this.framebufferSwap = framebufferSwap;
+            this.onTimersUpdate = onTimersUpdate;
+            timer = new FrameTimer();
         }
 
         public void dispose()
@@ -74,7 +80,7 @@ namespace ILGPUView.Files
             {
                 case AcceleratorType.Default:
                 case AcceleratorType.CPU:
-                    return CPUAccelerator.Accelerators.FirstOrDefault().ToString();
+                    return CPUAccelerator.CPUAccelerators.FirstOrDefault().ToString();
                 case AcceleratorType.Cuda:
                     return CudaAccelerator.CudaAccelerators.FirstOrDefault().ToString();
                 case AcceleratorType.OpenCL:
@@ -132,17 +138,23 @@ namespace ILGPUView.Files
 
         private void renderThreadMain()
         {
+            Stopwatch setupTimer = Stopwatch.StartNew();
+
             try
             {
                 if (DEBUG)
                 {
                     Test.setup(accelerator, output.render.width, output.render.height);
+                    setupTimer.Stop();
+                    onTimersUpdate(setupTimer.Elapsed, -1);
                 }
                 else
                 {
                     if(code.type == OutputType.terminal)
                     {
                         code.userCodeMain();
+                        setupTimer.Stop();
+                        onTimersUpdate(setupTimer.Elapsed, -1);
                         isRunning = false;
                         crashed = false;
                         onRunStop();
@@ -151,11 +163,14 @@ namespace ILGPUView.Files
                     else
                     {
                         code.userCodeSetup(accelerator, output.render.width, output.render.height);
+                        setupTimer.Stop();
+                        onTimersUpdate(setupTimer.Elapsed, -1);
                     }
                 }
 
                 while (isRunning)
                 {
+                    timer.startUpdate();
                     if (DEBUG)
                     {
                         isRunning = Test.loop(accelerator, ref output.render.framebuffer);
@@ -166,7 +181,8 @@ namespace ILGPUView.Files
                     }
 
                     framebufferSwap();
-                    Thread.Sleep(10);
+                    timer.endUpdate();
+                    onTimersUpdate(setupTimer.Elapsed, timer.averageUpdateRate);
                 }
 
                 isRunning = false;

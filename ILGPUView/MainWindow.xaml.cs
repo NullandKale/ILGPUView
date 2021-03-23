@@ -129,6 +129,11 @@ namespace ILGPUView
             }
         }
 
+        private void OnTimerUpdate(TimeSpan setupTime, double lastUpdateMS)
+        {
+            //Console.WriteLine("Setup: " + setupTime + " last update: " + lastUpdateMS);
+        }
+
         private void OnRunStop()
         {
             Dispatcher.InvokeAsync(() =>
@@ -159,7 +164,7 @@ namespace ILGPUView
 
         private void FrameBufferSwap()
         {
-            Dispatcher.InvokeAsync(() =>
+            Dispatcher.Invoke(() =>
             {
                 outputTabs.render.update(ref outputTabs.render.framebuffer);
             });
@@ -186,7 +191,7 @@ namespace ILGPUView
                             sampleRunStatus[fileTabs.file.assemblyNamespace] = "Attempting to Run";
                         }
 
-                        fileRunner = new FileRunner(fileTabs.file, outputTabs, (AcceleratorType)acceleratorPicker.SelectedIndex, OnRunStop, FrameBufferSwap);
+                        fileRunner = new FileRunner(fileTabs.file, outputTabs, (AcceleratorType)acceleratorPicker.SelectedIndex, OnRunStop, FrameBufferSwap, OnTimerUpdate);
                         fileRunner.Run();
                     }
                     else
@@ -290,6 +295,17 @@ namespace ILGPUView
                     {
                         fileTabs.AddCodeFile(file);
                     }
+                }
+            }
+        }
+
+        private void TutorialClicked(object sender, RoutedEventArgs e)
+        {
+            if(sender is MenuItem)
+            {
+                if(int.TryParse(((string)((MenuItem)sender).Header).Split(" ")[0], out int tutorial))
+                {
+                    fileTabs.AddCodeFile(new CodeFile("Program" + tutorial + ".cs", OutputType.terminal, Templates.getTutorial(tutorial)));
                 }
             }
         }
