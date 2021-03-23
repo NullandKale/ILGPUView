@@ -1,4 +1,5 @@
 ﻿using ILGPUView.Files;
+using ILGPUView.Utils;
 using Microsoft.CSharp;
 using System;
 using System.Collections.Generic;
@@ -29,7 +30,7 @@ namespace ILGPUView.UI
         public string displayedText;
         Action<string> onTextChanged;
 
-        private Regex tokenRegex = new Regex("([ \\t{}():;,])");
+        private Regex tokenRegex = new Regex("([ \\t{}()<>:;,])");
         public FileTab(CodeFile codeFile, Action<string> onTextChanged)
         {
             InitializeComponent();
@@ -105,6 +106,10 @@ namespace ILGPUView.UI
                     if (keywords.Contains(toSearch))
                     {
                         run.Foreground = new SolidColorBrush(Color.FromRgb(99, 130, 255));
+                    }
+                    else if(AssemblyHelpers.getAllTypes().Contains(toSearch))
+                    {
+                        run.Foreground = new SolidColorBrush(Color.FromRgb(99, 130, 99));
                     }
                     else
                     {

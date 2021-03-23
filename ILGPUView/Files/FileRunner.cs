@@ -142,6 +142,7 @@ namespace ILGPUView.Files
 
             try
             {
+                crashed = false;
                 if (DEBUG)
                 {
                     Test.setup(accelerator, output.render.width, output.render.height);

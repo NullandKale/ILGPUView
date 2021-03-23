@@ -1,5 +1,6 @@
 ﻿using ILGPUView.Files;
 using ILGPUView.UI;
+using ILGPUView.Utils;
 using ILGPUViewTest;
 using Microsoft.Win32;
 using System;
@@ -11,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -31,6 +33,8 @@ namespace ILGPUView
         public MainWindow()
         {
             InitializeComponent();
+
+            InputBindings.Add(new KeyBinding(new WindowCommand() { ExecuteDelegate = () => { Save_Click(null, null); } }, new KeyGesture(Key.S, ModifierKeys.Control)));
 
             outputTabs.render.onResolutionChanged = onResolutionChanged;
 
@@ -315,11 +319,13 @@ namespace ILGPUView
         {
             if(fileTabs.file != null)
             {
-                if(fileTabs.file.path == "")
-                {
-
-                }
+                fileTabs.SaveCodeFile(fileTabs.file, false, false);
             }
+        }
+
+        private void Undo_Click(object sender, RoutedEventArgs e)
+        {
+            fileTabs.Undo();
         }
     }
 }

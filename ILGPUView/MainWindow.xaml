@@ -37,8 +37,8 @@
                 </Menu>
                 <Menu>
                     <MenuItem Header="Edit">
-                        <MenuItem Header="Save" Click="Save_Click"/>
-                        <MenuItem Header="Redo"/>
+                        <MenuItem Header="Save (Ctrl + S)" Click="Save_Click"/>
+                        <MenuItem Header="Undo (Ctrl + Z)" Click="Undo_Click"/>
                     </MenuItem>
                 </Menu>
             </ToolBar>

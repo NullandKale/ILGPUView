@@ -11,10 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.IO;
 
 namespace ILGPUView.UI
 {
@@ -57,7 +54,7 @@ namespace ILGPUView.UI
         {
             if(code.needsSave)
             {
-                SaveCodeFile(code);
+                SaveCodeFile(code, true, false);
             }
 
             if(displayedFiles.Contains(code))
@@ -100,21 +97,34 @@ namespace ILGPUView.UI
             }
         }
 
-        public void SaveCodeFile(CodeFile code)
+        public void SaveCodeFile(CodeFile code, bool showUnsavedChanges, bool saveAs)
         {
-            SaveFileWindow sfw = new SaveFileWindow(code.name);
-            if (sfw.ShowDialog() == true)
+            if(showUnsavedChanges)
             {
-                SaveFileDialog sfDialog = new SaveFileDialog();
-                sfDialog.Filter = "C# file (*.cs)|*.cs|Text file (*.txt)|*.txt";
-                sfDialog.InitialDirectory = code.path;
-                sfDialog.FileName = code.name;
-
-                if (sfDialog.ShowDialog() == true)
+                SaveFileWindow sfw = new SaveFileWindow(code.name);
+                if (sfw.ShowDialog() != true)
                 {
-                    code.TrySave();
+                    return;
                 }
             }
+
+            if (saveAs || code.path == "")
+            {
+                SaveFileDialog pathDialog = new SaveFileDialog();
+                pathDialog.Filter = "C# file (*.cs)|*.cs";
+                pathDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                pathDialog.OverwritePrompt = true;
+                pathDialog.FileName = code.path +"\\" + code.name;
+
+                if(pathDialog.ShowDialog() == true)
+                {
+                    string filename = pathDialog.FileName;
+                    code.name = Path.GetFileName(filename);
+                    code.path = filename.Substring(0, filename.Length - Path.GetFileName(filename).Length);
+                }
+            }
+
+            code.TrySave();
         }
 
         public void AddCodeFile(CodeFile code)
@@ -155,6 +165,11 @@ namespace ILGPUView.UI
                 files.Items.Add(item);
                 files.SelectedItem = item;
             }
+        }
+
+        public void Undo()
+        {
+            file.Undo();
         }
     }
 }

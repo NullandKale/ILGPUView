@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ILGPUView.UI"
         mc:Ignorable="d"
-        Title="Save File?" Height="120" Width="300">
+        Title="Save File?" Height="180" Width="300">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>

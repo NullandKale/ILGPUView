@@ -1,4 +1,5 @@
 ﻿using ILGPU;
+using ILGPUView.UI;
 using ILGPUView.Utils;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -42,6 +43,8 @@ namespace ILGPUView.Files
         public disposeDelegate userCodeDispose;
         public terminalDelegate userCodeMain;
 
+        public FileTab display;
+
         public CodeFile(string name, string path, OutputType type)
         {
             this.path = path;
@@ -59,10 +62,13 @@ namespace ILGPUView.Files
 
         public void updateFileContents(string newFileContents)
         {
-            fileContents = newFileContents;
-            needsSave = true;
-            compiled = false;
-            loaded = false;
+            if(!newFileContents.Equals(fileContents))
+            {
+                fileContents = newFileContents;
+                needsSave = true;
+                compiled = false;
+                loaded = false;
+            }
         }
 
         public bool TrySave()
@@ -124,6 +130,14 @@ namespace ILGPUView.Files
             else
             {
                 return false;
+            }
+        }
+
+        public void Undo()
+        {
+            if(display != null)
+            {
+                display.code.Undo();
             }
         }
 
