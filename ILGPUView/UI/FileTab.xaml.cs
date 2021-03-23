@@ -26,13 +26,10 @@ namespace ILGPUView.UI
     public partial class FileTab : UserControl
     {
         public CodeFile codeFile;
-
         public string displayedText;
-
         Action<string> onTextChanged;
 
-        DispatcherOperation textUpdate;
-
+        private Regex tokenRegex = new Regex("([ \\t{}():;,])");
         public FileTab(CodeFile codeFile, Action<string> onTextChanged)
         {
             InitializeComponent();
@@ -59,51 +56,28 @@ namespace ILGPUView.UI
         public void SetText(string text)
         {
             code.TextChanged -= Code_TextChanged;
+            
             displayedText = text;
+
             string[] lines = displayedText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
 
-            //FlowDocument doc = new FlowDocument();
-            //int backPosition = code.Document.ContentStart.GetOffsetToPosition(code.CaretPosition);
+            code.Document.Blocks.Clear();
             code.Document.PageWidth = 1600;
 
             for (int i = 0; i < lines.Length; i++)
             {
-                Paragraph p = null;
-
-                if (i < code.Document.Blocks.Count)
-                {
-                    p = (Paragraph)code.Document.Blocks.ElementAt(i);
-                }
-                else
-                {
-                    p = new Paragraph();
-                }
+                Paragraph p = new Paragraph();
 
                 UpdateParagraph(ref p, lines[i]);
 
-                if (i >= code.Document.Blocks.Count)
-                {
-                    code.Document.Blocks.Add(p);
-                }
+                code.Document.Blocks.Add(p);
             }
 
-            //code.CaretPosition = code.Document.ContentStart.GetPositionAtOffset(backPosition, LogicalDirection.Forward);
             code.TextChanged += Code_TextChanged;
         }
         
         private void UpdateParagraph(ref Paragraph p, string newLine)
         {
-            string pText = new TextRange(p.ContentStart, p.ContentEnd).Text;
-
-            if (newLine.Trim().Equals(pText.Trim()))
-            {
-                return;
-            }
-            else
-            {
-                
-            }
-
             p.Margin = new Thickness(0);
 
             int firstInstanceOfComment = newLine.Trim().IndexOf("//");
@@ -118,9 +92,7 @@ namespace ILGPUView.UI
             }
             else
             {
-                Regex r = new Regex("([ \\t{}():;,])");
-                string[] tokens = r.Split(newLine);
-                //CSharpCodeProvider cs = new CSharpCodeProvider();
+                string[] tokens = tokenRegex.Split(newLine);
                 
                 p.Inlines.Clear();
 
@@ -134,10 +106,6 @@ namespace ILGPUView.UI
                     {
                         run.Foreground = new SolidColorBrush(Color.FromRgb(99, 130, 255));
                     }
-                    //else if (cs.IsValidIdentifier(toSearch))
-                    //{
-                    //    run.Foreground = new SolidColorBrush(Color.FromRgb(190, 196, 18));
-                    //}
                     else
                     {
                         run.Foreground = new SolidColorBrush(Color.FromRgb(220, 220, 220));
@@ -157,11 +125,20 @@ namespace ILGPUView.UI
             //    textUpdate = Dispatcher.InvokeAsync(() => { SetText(fullText); });
             //}
 
-            Dispatcher.InvokeAsync(() => { SetText(new TextRange(code.Document.ContentStart, code.Document.ContentEnd).Text); });
+            //Dispatcher.Invoke(() => { SetText(new TextRange(code.Document.ContentStart, code.Document.ContentEnd).Text); });
 
             if (onTextChanged != null)
             {
                 onTextChanged(displayedText);
+            }
+        }
+
+        private void code_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.IsDown && e.Key == Key.Tab)
+            {
+                code.Selection.Start.InsertTextInRun("    ");
+                e.Handled = true;
             }
         }
     }

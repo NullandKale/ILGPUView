@@ -37,7 +37,7 @@
                 </Menu>
                 <Menu>
                     <MenuItem Header="Edit">
-                        <MenuItem Header="Undo"/>
+                        <MenuItem Header="Save" Click="Save_Click"/>
                         <MenuItem Header="Redo"/>
                     </MenuItem>
                 </Menu>

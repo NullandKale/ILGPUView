@@ -21,6 +21,7 @@ namespace ILGPUView
     /// </summary>
     public partial class MainWindow : Window
     {
+        //Sample mode test stuff
         public static bool sampleTestMode = false;
         public static Dictionary<string, string> sampleRunStatus = new Dictionary<string, string>();
 
@@ -186,7 +187,7 @@ namespace ILGPUView
                         runButton.Content = "Stop";
                         status.Content = "Running";
 
-                        if (sampleRunStatus.ContainsKey(fileTabs.file.assemblyNamespace))
+                        if (sampleTestMode && sampleRunStatus.ContainsKey(fileTabs.file.assemblyNamespace))
                         {
                             sampleRunStatus[fileTabs.file.assemblyNamespace] = "Attempting to Run";
                         }
@@ -196,7 +197,7 @@ namespace ILGPUView
                     }
                     else
                     {
-                        //outputTabs.log.clear();
+                        outputTabs.log.clear();
                         status.Content = "Compiling " + fileTabs.file.name;
 
                         Task.Run(() =>
@@ -207,11 +208,11 @@ namespace ILGPUView
                                 {
                                     runButton.Content = "Run";
                                     status.Content = "Compiled " + fileTabs.file.fileContents.Split("\n").Length + " lines OK";
-                                    if (sampleRunStatus.ContainsKey(fileTabs.file.assemblyNamespace))
+                                    if (sampleTestMode && sampleRunStatus.ContainsKey(fileTabs.file.assemblyNamespace))
                                     {
                                         sampleRunStatus[fileTabs.file.assemblyNamespace] = "Compiled OK";
+                                        Run_Click(null, null);
                                     }
-                                    Run_Click(null, null);
                                 });
                             }
                             else
@@ -306,6 +307,17 @@ namespace ILGPUView
                 if(int.TryParse(((string)((MenuItem)sender).Header).Split(" ")[0], out int tutorial))
                 {
                     fileTabs.AddCodeFile(new CodeFile("Program" + tutorial + ".cs", OutputType.terminal, Templates.getTutorial(tutorial)));
+                }
+            }
+        }
+
+        private void Save_Click(object sender, RoutedEventArgs e)
+        {
+            if(fileTabs.file != null)
+            {
+                if(fileTabs.file.path == "")
+                {
+
                 }
             }
         }

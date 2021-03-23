@@ -13,31 +13,37 @@ namespace ILGPUView.Utils
     // This stuff is messy and will probably break
     public static class AssemblyHelpers
     {
+        private static List<MetadataReference> cachedMetadata;
         public static List<MetadataReference> getAsManyAsPossible()
         {
-            List<string> locations = getAllCurrentlyLoadedAssembiles().Concat(getAllDllsInSamples()).ToList();
-
-            Dictionary<string, MetadataReference> dedupedReferences = new Dictionary<string, MetadataReference>();
-
-            foreach(string s in locations)
+            if(cachedMetadata == null)
             {
-                if(s == null || s.Length <= 0)
-                {
-                    continue;
-                }
+                List<string> locations = getAllCurrentlyLoadedAssembiles().Concat(getAllDllsInSamples()).ToList();
 
-                string filename = s.Substring(s.LastIndexOf("\\"));
-                if (!dedupedReferences.ContainsKey(filename))
+                Dictionary<string, MetadataReference> dedupedReferences = new Dictionary<string, MetadataReference>();
+
+                foreach (string s in locations)
                 {
-                    if (TryGetMetadataReference(s, out MetadataReference meta))
+                    if (s == null || s.Length <= 0)
                     {
-                        dedupedReferences.Add(filename, meta);
+                        continue;
                     }
+
+                    string filename = s.Substring(s.LastIndexOf("\\"));
+                    if (!dedupedReferences.ContainsKey(filename))
+                    {
+                        if (TryGetMetadataReference(s, out MetadataReference meta))
+                        {
+                            dedupedReferences.Add(filename, meta);
+                        }
+                    }
+
                 }
 
+                cachedMetadata = dedupedReferences.Values.ToList();
             }
 
-            return dedupedReferences.Values.ToList();
+            return cachedMetadata;
         }
 
         private static bool TryGetMetadataReference(string s, out MetadataReference r)
@@ -91,6 +97,30 @@ namespace ILGPUView.Utils
         public static List<string> getAllDllsInSamples()
         {
             return Directory.GetFiles(".\\Samples\\", "*.dll", SearchOption.AllDirectories).ToList();
+        }
+
+        private static HashSet<string> typeNameCache;
+        public static HashSet<string> getAllTypes()
+        {
+            if(typeNameCache == null)
+            {
+                HashSet<string> list = new HashSet<string>();
+
+                foreach (Assembly ass in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    foreach (Type t in ass.GetExportedTypes())
+                    {
+                        if (!list.Contains(t.Name))
+                        {
+                            list.Add(t.Name);
+                        }
+                    }
+                }
+
+                typeNameCache = list;
+            }
+
+            return typeNameCache;
         }
     }
 }
