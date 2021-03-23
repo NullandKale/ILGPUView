@@ -25,6 +25,7 @@ namespace ILGPUView
     {
         //Sample mode test stuff
         public static bool sampleTestMode = false;
+        public static bool DLLTestMode = true;
         public static Dictionary<string, string> sampleRunStatus = new Dictionary<string, string>();
 
         SampleManager files;
@@ -171,7 +172,17 @@ namespace ILGPUView
         {
             Dispatcher.Invoke(() =>
             {
-                outputTabs.render.update(ref outputTabs.render.framebuffer);
+                if(DLLTestMode)
+                {
+                    byte[] testBitmap = new byte[outputTabs.render.width * outputTabs.render.height * 3];
+                    fileTabs.file.compiledCode.Seek(0, SeekOrigin.Begin);
+                    fileTabs.file.compiledCode.Read(testBitmap, 0, Math.Min((int)fileTabs.file.compiledCode.Length, outputTabs.render.width * outputTabs.render.height * 3));
+                    outputTabs.render.update(ref testBitmap);
+                }
+                else
+                {
+                    outputTabs.render.update(ref outputTabs.render.framebuffer);
+                }
             });
         }
 
@@ -212,6 +223,12 @@ namespace ILGPUView
                                 {
                                     runButton.Content = "Run";
                                     status.Content = "Compiled " + fileTabs.file.fileContents.Split("\n").Length + " lines OK";
+
+                                    if(DLLTestMode)
+                                    {
+                                        FrameBufferSwap();
+                                    }
+
                                     if (sampleTestMode && sampleRunStatus.ContainsKey(fileTabs.file.assemblyNamespace))
                                     {
                                         sampleRunStatus[fileTabs.file.assemblyNamespace] = "Compiled OK";

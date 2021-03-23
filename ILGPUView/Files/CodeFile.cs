@@ -36,7 +36,7 @@ namespace ILGPUView.Files
         public bool loaded = false;
         public bool compiled = false;
 
-        private MemoryStream compiledCode;
+        public MemoryStream compiledCode;
 
         public setupDelegate userCodeSetup;
         public loopDelegate userCodeLoop;
