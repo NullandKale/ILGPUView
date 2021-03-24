@@ -65,18 +65,17 @@ namespace ILGPUViewTest
             return true;
         }
 
-        public static void m()
+        public static void Tutorial02()
         {
-            using Context context = new Context();
-            Console.WriteLine("Context: " + context.ToString());
+            Context context = new Context();
 
-            Accelerator accelerator = null;
             bool debug = false;
-            if(CudaAccelerator.CudaAccelerators.Length > 0 && !debug)
+            Accelerator accelerator = null;
+            if (CudaAccelerator.CudaAccelerators.Length > 0 && !debug)
             {
                 accelerator = new CudaAccelerator(context);
             }
-            else if(CLAccelerator.AllCLAccelerators.Length > 0 && !debug)
+            else if (CLAccelerator.AllCLAccelerators.Length > 0 && !debug)
             {
                 accelerator = new CLAccelerator(context, CLAccelerator.AllCLAccelerators.FirstOrDefault());
             }
@@ -85,7 +84,75 @@ namespace ILGPUViewTest
                 accelerator = new CPUAccelerator(context);
             }
 
-            accelerator.PrintInformation();
+            MemoryBuffer<float> floatBuffer = accelerator.Allocate<float>(10_000_00);
+            floatBuffer.MemSetToZero();
+
+            int[] intData = new int[100_000];
+            MemoryBuffer<int> intBuffer = accelerator.Allocate(intData);
+            
+            intBuffer.CopyTo(intData, 0, 0, intData.Length);
+
+            intData[1] = 1;
+            
+            intBuffer.CopyFrom(intData, 0, 0, intData.Length);
+
+
+            float[] output = floatBuffer.GetAsArray();
+
+            accelerator.Synchronize();
+
+
+            intBuffer.Dispose();
+            floatBuffer.Dispose();
+            accelerator.Dispose();
+
+            for(int i = 0; i < floatBuffer.Length; i++)
+            {
+                Console.Write(output[i] + " ");
+                if(i % 25 == 24)
+                {
+                    Console.WriteLine();
+                }
+            }
+        }
+
+        public static float[] Tutorial03()
+        {
+            Context context = new Context();
+
+            bool debug = false;
+            Accelerator accelerator = null;
+            if (CudaAccelerator.CudaAccelerators.Length > 0 && !debug)
+            {
+                accelerator = new CudaAccelerator(context);
+            }
+            else if (CLAccelerator.AllCLAccelerators.Length > 0 && !debug)
+            {
+                accelerator = new CLAccelerator(context, CLAccelerator.AllCLAccelerators.FirstOrDefault());
+            }
+            else
+            {
+                accelerator = new CPUAccelerator(context);
+            }
+
+            Action<Index1, ArrayView<float>, float> addKernel =
+                accelerator.LoadAutoGroupedStreamKernel<Index1, ArrayView<float>, float>(AddKernel);
+
+            MemoryBuffer<float> buffer = accelerator.Allocate<float>(10_000_00);
+            buffer.MemSetToZero();
+            addKernel(buffer.Length, buffer.View, 10.0f);
+            float[] output = buffer.GetAsArray();
+            accelerator.Synchronize();
+
+            buffer.Dispose();
+            accelerator.Dispose();
+
+            return output;
+        }
+
+        static void AddKernel(Index1 index, ArrayView<float> output, float val)
+        {
+            output[index] += val;
         }
 
         public static void dispose()
@@ -411,6 +478,12 @@ namespace Tutorial
 
         public static readonly string terminalTemplate = @"
 using System;
+using ILGPU;
+using ILGPU.Runtime;
+using ILGPU.Runtime.CPU;
+using ILGPU.Runtime.Cuda;
+using ILGPU.Runtime.OpenCL;
+using System.Linq;
 
 namespace Terminal
 {
@@ -420,7 +493,7 @@ namespace Terminal
         {
             Console.WriteLine(""Hello World!"");
         }
-}
+    }
 }
 ";
 

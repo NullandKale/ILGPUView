@@ -5,6 +5,7 @@ using ILGPUViewTest;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -25,7 +26,7 @@ namespace ILGPUView
     {
         //Sample mode test stuff
         public static bool sampleTestMode = false;
-        public static bool DLLTestMode = true;
+        public static bool DLLTestMode = false;
         public static Dictionary<string, string> sampleRunStatus = new Dictionary<string, string>();
 
         SampleManager files;
@@ -132,6 +133,11 @@ namespace ILGPUView
             if(fileRunner != null)
             {
                 fileRunner.Stop();
+            }
+
+            if(!Debugger.IsAttached)
+            {
+                Environment.Exit(0);
             }
         }
 
