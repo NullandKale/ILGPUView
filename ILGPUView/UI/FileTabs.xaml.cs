@@ -91,7 +91,7 @@ namespace ILGPUView.UI
 
                     Console.WriteLine("Finished");
                     Logger.staticInstance.Save();
-                    AddCodeFile(new CodeFile("Program.cs", OutputType.bitmap, Templates.bitmapTemplate));
+                    AddCodeFile(new CodeFile("Program.cs", OutputType.bitmap, TextType.code, Templates.bitmapTemplate));
                     MainWindow.sampleTestMode = false;
                 }
             }

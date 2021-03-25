@@ -1,0 +1,31 @@
+﻿<Window x:Class="ILGPUView.UI.OpenTextLinkWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ILGPUView.UI"
+        mc:Ignorable="d"
+        Title="OpenTextLinkWindow" Height="250" Width="400">
+    <StackPanel VerticalAlignment="Center">
+        <Label x:Name="label" Content="" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Label Content="Link:" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"/>
+            <TextBox x:Name="urlText" Text="" HorizontalAlignment="Stretch" Padding="4 4" Margin="10 10"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Label Content="Filename:" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"/>
+            <TextBox x:Name="filename" Text="Program.md" HorizontalAlignment="Stretch" Padding="4 4" Margin="10 10"/>
+        </StackPanel>
+        <Grid Margin="40 0">
+            <ComboBox x:Name="output" Text="Output Type" HorizontalAlignment="Left">
+                <ComboBoxItem Name="bitmap" Content="Bitmap" IsSelected="True"/>
+                <ComboBoxItem Name="terminal" Content="Terminal"/>
+            </ComboBox>
+            <ComboBox x:Name="type" Text="Text Type"  HorizontalAlignment="Right">
+                <ComboBoxItem Name="Markdown" Content="Markdown" IsSelected="True"/>
+                <ComboBoxItem Name="Code" Content="Code"/>
+            </ComboBox>
+        </Grid>
+        <Button x:Name="load" Content="Load" HorizontalAlignment="Center" Padding="20 4" Margin="20 10" VerticalAlignment="Center" Click="load_Click"/>
+    </StackPanel>
+</Window>

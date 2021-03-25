@@ -151,7 +151,7 @@ namespace ILGPUView.Files
                 }
                 else
                 {
-                    if(code.type == OutputType.terminal)
+                    if(code.outputType == OutputType.terminal)
                     {
                         code.userCodeMain();
                         setupTimer.Stop();

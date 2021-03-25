@@ -20,11 +20,13 @@
                             <MenuItem Header="Bitmap File" Click="BasicBitmap_Click"/>
                             <MenuItem Header="Terminal File" Click="BasicTerminal_Click"/>
                         </MenuItem>
+                        <MenuItem Header="Open Link" Click="OpenLink_Click"/>
                         <MenuItem Header="Open Bitmap File" Click="OpenBFile_Click"/>
                         <MenuItem Header="Open Terminal File" Click="OpenTFile_Click"/>
                         <MenuItem Header="Examples">
                             <MenuItem x:Name="samples" Header="ILGPU.Samples"/>
                             <MenuItem Header="Tutorial">
+                                <MenuItem Header="TableOfContents" Click="TOC_Click"/>
                                 <MenuItem Header="01 Context and Accelerators" Click="TutorialClicked"/>
                                 <MenuItem Header="02 MemoryBuffers and ArrayViews" Click="TutorialClicked"/>
                                 <MenuItem Header="03 Kernels" Click="TutorialClicked"/>

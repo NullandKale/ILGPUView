@@ -380,6 +380,7 @@ namespace Tutorial
 // and everything that it owns.
 
 // Ok, this tutorial covers most of the boiler plate code needed.
+// The next tutorial covers memory
 // In the next tutorial we do something more interesting I promise.
         }
     }

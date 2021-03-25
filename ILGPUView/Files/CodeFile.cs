@@ -19,8 +19,14 @@ namespace ILGPUView.Files
 {
     public enum OutputType
     {
-        bitmap,
-        terminal
+        bitmap = 0,
+        terminal = 1,
+    }
+
+    public enum TextType
+    {
+        markdown = 0,
+        code = 1,
     }
 
     public class CodeFile
@@ -30,7 +36,8 @@ namespace ILGPUView.Files
         public string assemblyNamespace = "";
         public string fileContents = "";
 
-        public OutputType type;
+        public OutputType outputType;
+        public TextType textType;
 
         public bool needsSave = false;
         public bool loaded = false;
@@ -45,18 +52,20 @@ namespace ILGPUView.Files
 
         public FileTab display;
 
-        public CodeFile(string name, string path, OutputType type)
+        public CodeFile(string name, string path, OutputType outputType, TextType textType)
         {
             this.path = path;
             this.name = name;
-            this.type = type;
+            this.outputType = outputType;
+            this.textType = textType;
         }
 
-        public CodeFile(string name, OutputType type, string fileContents)
+        public CodeFile(string name, OutputType type, TextType textType, string fileContents)
         {
             this.name = name;
-            this.type = type;
+            this.outputType = type;
             this.fileContents = fileContents;
+            this.textType = textType;
             assemblyNamespace = Regex.Match(fileContents, "(?<=\\bnamespace\\s+)\\p{L}+").Value;
         }
 
@@ -103,8 +112,6 @@ namespace ILGPUView.Files
                 try
                 {
                     fileContents = File.ReadAllText(totalPath);
-                    assemblyNamespace = Regex.Match(fileContents, "(?<=\\bnamespace\\s+)\\p{L}+").Value;
-                    fileContents = fileContents.Insert(fileContents.IndexOf("namespace"), "[assembly: System.Runtime.CompilerServices.InternalsVisibleToAttribute(\"ILGPURuntime\")]\n");
                     needsSave = false;
                 }
                 catch (Exception e)
@@ -145,6 +152,9 @@ namespace ILGPUView.Files
         {
             try
             {
+                assemblyNamespace = Regex.Match(fileContents, "(?<=\\bnamespace\\s+)\\p{L}+").Value;
+                fileContents = fileContents.Insert(fileContents.IndexOf("namespace"), "[assembly: System.Runtime.CompilerServices.InternalsVisibleToAttribute(\"ILGPURuntime\")]\n");
+
                 // The following is magic taken from https://stackoverflow.com/a/29417053/1500733
 
                 // define source code, then parse it (to the type used for compilation)
@@ -211,7 +221,7 @@ namespace ILGPUView.Files
                 compiledCode.Seek(0, SeekOrigin.Begin);
                 Assembly assembly = Assembly.Load(compiledCode.ToArray());
                 Type LoadedType = assembly.GetType(assemblyNamespace + (assemblyNamespace == "ILGPUViewTest" ? ".Test" : ".Program"));
-                switch (type)
+                switch (outputType)
                 {
                     case OutputType.bitmap:
                         MethodInfo setup = LoadedType.GetMethod("setup");

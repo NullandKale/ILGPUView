@@ -1,6 +1,8 @@
 ﻿using ILGPUView.Files;
 using ILGPUView.Utils;
+using Markdig;
 using Microsoft.CSharp;
+using Neo.Markdig.Xaml;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,6 +28,16 @@ namespace ILGPUView.UI
     /// </summary>
     public partial class FileTab : UserControl
     {
+        private static readonly HashSet<string> keywords = new HashSet<string>
+        {
+            "bool", "byte", "sbyte", "short", "ushort", "int", "uint", "long", "ulong", "double", "float", "decimal",
+            "string", "char", "void", "object", "typeof", "sizeof", "null", "true", "false", "if", "else", "while", "for", "foreach", "do", "switch",
+            "case", "default", "lock", "try", "throw", "catch", "finally", "goto", "break", "continue", "return", "public", "private", "internal",
+            "protected", "static", "readonly", "sealed", "const", "fixed", "stackalloc", "volatile", "new", "override", "abstract", "virtual",
+            "event", "extern", "ref", "out", "in", "is", "as", "params", "__arglist", "__makeref", "__reftype", "__refvalue", "this", "base",
+            "namespace", "using", "class", "struct", "interface", "enum", "delegate", "checked", "unchecked", "unsafe", "operator", "implicit", "explicit"
+        };
+
         public CodeFile codeFile;
         public string displayedText;
         Action<string> onTextChanged;
@@ -44,20 +56,37 @@ namespace ILGPUView.UI
             SetText(codeFile.fileContents);
         }
 
-        private static HashSet<string> keywords = new HashSet<string>
-        {
-            "bool", "byte", "sbyte", "short", "ushort", "int", "uint", "long", "ulong", "double", "float", "decimal",
-            "string", "char", "void", "object", "typeof", "sizeof", "null", "true", "false", "if", "else", "while", "for", "foreach", "do", "switch",
-            "case", "default", "lock", "try", "throw", "catch", "finally", "goto", "break", "continue", "return", "public", "private", "internal",
-            "protected", "static", "readonly", "sealed", "const", "fixed", "stackalloc", "volatile", "new", "override", "abstract", "virtual",
-            "event", "extern", "ref", "out", "in", "is", "as", "params", "__arglist", "__makeref", "__reftype", "__refvalue", "this", "base",
-            "namespace", "using", "class", "struct", "interface", "enum", "delegate", "checked", "unchecked", "unsafe", "operator", "implicit", "explicit"
-        };
-
         public void SetText(string text)
         {
             code.TextChanged -= Code_TextChanged;
-            
+
+            switch (codeFile.textType)
+            {
+                case TextType.code:
+                    ParseTextForCode(text);
+                    break;
+                case TextType.markdown:
+                    ParseTextForMarkdown(text);
+                    code.Background = new SolidColorBrush(Color.FromRgb(255, 255, 255));
+                    break;
+            }
+
+            code.TextChanged += Code_TextChanged;
+        }
+
+        private void ParseTextForMarkdown(string text)
+        {
+            displayedText = text;
+            var doc = MarkdownXaml.ToFlowDocument(displayedText,
+                new MarkdownPipelineBuilder()
+                .UseXamlSupportedExtensions()
+                .Build()
+            );
+            code.Document = doc;
+        }
+
+        private void ParseTextForCode(string text)
+        {
             displayedText = text;
 
             string[] lines = displayedText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
@@ -74,9 +103,8 @@ namespace ILGPUView.UI
                 code.Document.Blocks.Add(p);
             }
 
-            code.TextChanged += Code_TextChanged;
         }
-        
+
         private void UpdateParagraph(ref Paragraph p, string newLine)
         {
             p.Margin = new Thickness(0);

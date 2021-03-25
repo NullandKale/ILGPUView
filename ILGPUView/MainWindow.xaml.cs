@@ -54,7 +54,7 @@ namespace ILGPUView
 
             if(!sampleTestMode)
             {
-                fileTabs.AddCodeFile(new CodeFile("Program.cs", OutputType.bitmap, Templates.bitmapTemplate));
+                fileTabs.AddCodeFile(new CodeFile("Program.cs", OutputType.bitmap, TextType.code, Templates.bitmapTemplate));
             }
         }
 
@@ -283,7 +283,7 @@ namespace ILGPUView
             NewFileWindow nfw = new NewFileWindow(OutputType.bitmap);
             if(nfw.ShowDialog() == true)
             {
-                fileTabs.AddCodeFile(new CodeFile(nfw.filename, OutputType.bitmap, Templates.bitmapTemplate));
+                fileTabs.AddCodeFile(new CodeFile(nfw.filename, OutputType.bitmap, TextType.code, Templates.bitmapTemplate));
             }
         }
 
@@ -292,7 +292,7 @@ namespace ILGPUView
             NewFileWindow nfw = new NewFileWindow(OutputType.terminal);
             if (nfw.ShowDialog() == true)
             {
-                fileTabs.AddCodeFile(new CodeFile(nfw.filename, OutputType.terminal, Templates.terminalTemplate));
+                fileTabs.AddCodeFile(new CodeFile(nfw.filename, OutputType.terminal, TextType.code, Templates.terminalTemplate));
             }
         }
 
@@ -302,7 +302,7 @@ namespace ILGPUView
             if (openFileDialog.ShowDialog() == true)
             {
                 string filename = openFileDialog.FileName;
-                CodeFile file = new CodeFile(Path.GetFileName(filename), filename.Substring(0, filename.Length - Path.GetFileName(filename).Length), OutputType.bitmap);
+                CodeFile file = new CodeFile(Path.GetFileName(filename), filename.Substring(0, filename.Length - Path.GetFileName(filename).Length), OutputType.bitmap, TextType.code);
                 if(file.TryLoad())
                 {
                     fileTabs.AddCodeFile(file);
@@ -318,7 +318,7 @@ namespace ILGPUView
                 if (openFileDialog.ShowDialog() == true)
                 {
                     string filename = openFileDialog.FileName;
-                    CodeFile file = new CodeFile(Path.GetFileName(filename), filename.Substring(0, filename.Length - Path.GetFileName(filename).Length), OutputType.terminal);
+                    CodeFile file = new CodeFile(Path.GetFileName(filename), filename.Substring(0, filename.Length - Path.GetFileName(filename).Length), OutputType.terminal, TextType.code);
                     if (file.TryLoad())
                     {
                         fileTabs.AddCodeFile(file);
@@ -333,8 +333,19 @@ namespace ILGPUView
             {
                 if(int.TryParse(((string)((MenuItem)sender).Header).Split(" ")[0], out int tutorial))
                 {
-                    fileTabs.AddCodeFile(new CodeFile("Program" + tutorial + ".cs", OutputType.terminal, Templates.getTutorial(tutorial)));
+                    fileTabs.AddCodeFile(new CodeFile("Program" + tutorial + ".cs", OutputType.terminal, TextType.code, Templates.getTutorial(tutorial)));
                 }
+            }
+        }
+
+        private void OpenLink_Click(object sender, RoutedEventArgs e)
+        {
+            OpenTextLinkWindow openTextLink = new OpenTextLinkWindow();
+            if (openTextLink.ShowDialog() == true)
+            {
+                string filename = openTextLink.file;
+                CodeFile file = new CodeFile(filename, (OutputType)openTextLink.output.SelectedIndex, (TextType)openTextLink.type.SelectedIndex, openTextLink.loadedString);
+                fileTabs.AddCodeFile(file);
             }
         }
 
@@ -349,6 +360,15 @@ namespace ILGPUView
         private void Undo_Click(object sender, RoutedEventArgs e)
         {
             fileTabs.Undo();
+        }
+
+        private void TOC_Click(object sender, RoutedEventArgs e)
+        {
+            CodeFile file = new CodeFile("Table_Of_Contents.md", ".\\Templates", OutputType.terminal, TextType.markdown);
+            if (file.TryLoad())
+            {
+                fileTabs.AddCodeFile(file);
+            }
         }
     }
 }

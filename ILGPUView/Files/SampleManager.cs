@@ -70,7 +70,7 @@ namespace ILGPUView.Files
                         {
                             if (File.Exists(directories[i] + "\\Program.cs"))
                             {
-                                CodeFile code = new CodeFile("Program.cs", directories[i], OutputType.terminal);
+                                CodeFile code = new CodeFile("Program.cs", directories[i], OutputType.terminal, TextType.code);
                                 samples.Add(directories[i], code);
                             }
                             else
