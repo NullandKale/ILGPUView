@@ -35,8 +35,9 @@ require a context reference require dispose calls to prevent memory
 leaks. In most simple cases you can use the using pattern as above to make it 
 harder to mess up.
 
-You can also use the ContextFlags enum to change many settings.
-but for now all we need is a basic context.
+You can also use the ContextFlags enum to change many settings. 
+
+For now all we need is a basic context.
 
 ## Accelerators
 Every ILGPU program will require at least 1 Accelerator.
