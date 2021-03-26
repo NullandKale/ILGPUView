@@ -4,11 +4,13 @@ Welcome to the first ILGPU tutorial. In this tutorial we will cover the basics o
 
 ## Context
 All ILGPU classes and functions rely on the global ILGPU Context.
+The context's job is mainly to act as an interface for the ILGPU compiler. 
+I believe it also stores some global state. 
 * requires: using ILGPU;
 * basic constructing: Context context = new Context();
 
 ### Sample 01|01 :
-```
+```C#
 using System;
 using ILGPU;
 
@@ -82,7 +84,7 @@ to get what is likely the best accelerator. If you have multiple
 GPU's or something you may need something more complex.
 
 
-```
+```C#
 using System;
 using System.Linq;
 
