@@ -1,6 +1,6 @@
 ﻿# Tutorial 01 Context and Accelerators
 
-Welcome to the first ILGPU tutorial. In this tutorial we will cover the basics of the Context and Accelerator objects.
+Welcome to the first ILGPU tutorial! In this tutorial we will cover the basics of the Context and Accelerator objects.
 
 ## Context
 All ILGPU classes and functions rely on an instance of ILGPU.Context.
