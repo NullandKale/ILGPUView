@@ -3,6 +3,7 @@ using ILGPU.Runtime;
 using ILGPU.Runtime.CPU;
 using ILGPU.Runtime.Cuda;
 using ILGPU.Runtime.OpenCL;
+using ILGPUView.Files;
 using System;
 using System.Linq;
 
@@ -225,17 +226,29 @@ namespace ILGPUView
 
     public class Templates
     {
-        public static string getTutorial(int ID)
+        public static CodeFile getTutorial(int ID)
         {
+            CodeFile file = null;
+
             switch (ID)
             {
                 case 1:
-                    return Tutorial01Template;
+                    file = new CodeFile("Tutorial_01.md", ".\\Templates", OutputType.terminal, TextType.markdown);
+                    break;
                 case 2:
-                    return Tutorial02Template;
-                default:
-                    return terminalTemplate;
+                    file = new CodeFile("Tutorial_02.cs", ".\\Templates", OutputType.terminal, TextType.markdown);
+                    break;
             }
+
+            if(file != null)
+            {
+                if(file.TryLoad())
+                {
+                    return file;
+                }
+            }
+
+            return null;
         }
 
         public static readonly string Tutorial01Template = @"

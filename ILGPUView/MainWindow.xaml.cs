@@ -333,7 +333,11 @@ namespace ILGPUView
             {
                 if(int.TryParse(((string)((MenuItem)sender).Header).Split(" ")[0], out int tutorial))
                 {
-                    fileTabs.AddCodeFile(new CodeFile("Program" + tutorial + ".cs", OutputType.terminal, TextType.code, Templates.getTutorial(tutorial)));
+                    CodeFile file = Templates.getTutorial(tutorial);
+                    if(file != null)
+                    {
+                        fileTabs.AddCodeFile(file);
+                    }
                 }
             }
         }

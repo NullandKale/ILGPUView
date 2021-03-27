@@ -5,7 +5,7 @@
 This series is meant to be a brief overview of ILGPU and how to use it. It assumes you have at least a little knowledge of how Cuda or OpenCL work. 
 If you need a primer look to something like [this for Cuda](https://developer.nvidia.com/about-cuda) or [this for OpenCL](https://www.khronos.org/opencl/)
 
-01 Context and Accelerators (0.10.0 code version written)
+01 [Context and Accelerators](Tutorial_01.md) (0.10.0)
 > This tutorial covers the creating the Context and Accelerator objects which setup ILGPU for use. 
 > It's mostly boiler plate and does no computation but it does print info about your GPU if you have one.
 > There is some advice about ILGPU in here that makes it worth the quick read.
