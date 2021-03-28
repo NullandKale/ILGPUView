@@ -5,73 +5,114 @@ Welcome to the seccond ILGPU tutorial. In this tutorial we will cover the basics
 in terms of stack and heap objects, ref / in / out parameters, and GC. Once you
 introduce a coprocessor like a GPU memory gets a little more complex. 
 
-## Memory
-Ok... I am about to go on a bit of a rant about memory. If you just want to get to the 
-programming you can skip ahead to MemoryBuffers. The following is my understanding of 
-the performance quirks with GPU's and memory and cache and coalescent memory access.
+[Preface: A rant about memory.](Tutorial_02_Preface.md) 
 
-Ok, buckle up.
+I wrote a preface to this tutorial that I believe will help you better understand how this 
+works in hardware. It is not necessary to read if you just want to learn how to use ILGPU.
 
-#### Computers need memory, and memory is slow. (Like, really slow)
-Back in the day (I assume, the first computer I remember using had DDR-200) computer memory
- was FAST. Most of the time the limiting factor was the CPU, though correctly timing video output was also
-a driving force. As an example, the C64 ran the memory at 2x the CPU frequency so the VIC-II 
-graphics chip could share the CPU memory by stealing half the cycles. Since then, humanity 
-has gotten much better at making silicon and precious metals do our bidding. Feeding 
-data into the CPU from memory has become the slow part. Memory is slow.
+Before we get into this tutorial we need a bit of jargon.
 
-Why is memory slow? To be honest, it seems to me that it's caused by two things:
+* Device: the GPU or a GPU
+* Host: the computer that contains the device
 
-1. Physics<br/>
-Programmers like to think of computers as an abstract thing, a platonic ideal. 
-But here in the real world there are no spherical cows, no free lunch. Memory values are ACTUAL
-ELECTRONS traveling through silicon and precious metals. In general, the farther from the thing doing the math the ACTUAL
-ELECTRONS are the slower it is to access. Wow... computers are magic.
+In most computers the host and device each have there own seperate memory. There are some ways
+to pretend that they share memory in ILGPU, like ExchangeBuffers (more on that in a more advanced memory tutorial), but in general
+it is faster and uses less memory to manage both sides manually. 
 
-2. We ~~need~~ want a lot of memory.<br/>
-We can make very fast memory, but it must literally be directly made into the processor cores in silicon. 
-Not only is this is very expensive, the more memory in silicon the less room for processor stuff. 
+# MemoryBuffer\<T\>
+The MemoryBuffer is the host side copy of memory allocated on the device. 
 
-This leads to an optimization problem. Modern processor designers use a complex system of tiered 
-memory consisting of several layers of small, fast, on die memory and large, slow, distant, off die memory.
+* always obtained from an Accelerator
+* requires: using ILGPU.Runtime;
+* basic constructing: MemoryBuffer\<int\> OnDeviceInts = accelerator.Allocate\<int\>(1000);
 
-The processors also perform a few tricks to help us deal with the fact that memory is slow. 
-If a program uses memory in one spot it probably will use the memory around that spot so processors 
-*prefetch* more memory than you ask for at first and put it in the cache, closer to the processor. 
+# ArrayView\<T\>
+The ArrayView is the device side copy of memory allocated on the device via the host.
 
-I am getting off topic. For a more detailed explaination, see this thing I found on [google](https://formulusblack.com/blog/compute-performance-distance-of-data-as-a-measure-of-latency/).
+* always obtained from a MemoryBuffer
+* requires: using ILGPU.Runtime;
+* basic constructing: ArrayView\<int\> ints = OnDeviceInts.View;
 
-What does this mean for the ILGPU?
 
-#### GPU's have memory, and memory is slow. 
+### Sample 02|01
+All device side memory management happens in the host code through the MemoryBuffer.
+The sample goes over the basics of managing memory via MemoryBuffers.
 
-GPU's on paper have TONS of memory bandwidth, my GPU has around 10x the memory bandwidth my CPU does. Right? Yeah... 
+```C#
+using System;
+using System.Linq;
 
-###### Kinda
-If we go back into spherical cow territory and ignore a ton of important details, we can illustrate an 
-important quirk in GPU design that is directly impacts performance.
+using ILGPU;
+using ILGPU.Runtime;
+using ILGPU.Runtime.CPU;
+using ILGPU.Runtime.Cuda;
+using ILGPU.Runtime.OpenCL;
 
-My Ryzen 5 3600 with dual channel DDR4 it gets around 34 GB/s of memory bandwidth. The GDDR6 in my RTX 2060 gets around 336 GB/s of memory bandwidth.
+namespace Tutorial
+{
+    class Program
+    {
+        public static readonly bool debug = false;
+        static void Main()
+        {
+            // We still need the Context and Accelerator boiler plate.
+            Console.WriteLine("Hello Tutorial 02!");
+            Context context = new Context();
+            Accelerator accelerator = null;
+            
+            if (CudaAccelerator.CudaAccelerators.Length > 0 && !debug)
+            {
+                accelerator = new CudaAccelerator(context);
+            }
+            else if (CLAccelerator.AllCLAccelerators.Length > 0 && !debug)
+            {
+                accelerator = new CLAccelerator(context, CLAccelerator.AllCLAccelerators.FirstOrDefault());
+            }
+            else
+            {
+                accelerator = new CPUAccelerator(context);
+            }
 
-But lets compare bandwidth per thread.
+            // Gets array of 1000 doubles on host.
+            double[] doubles = new double[1000];
 
-Ryzen 5 3600 34 GB/s / 12 threads = 2.83 GB/s per thread
+            // Gets MemoryBuffer on device with same size and contents as doubles.
+            MemoryBuffer<double> doublesOnDevice = accelerator.Allocate<double>(doubles);
 
-I thought this would be easy, but after double checking, I found that the question "How many threads can a GPU run at once?"
- is a hard question to answer. According to the cuda manual at maximum an SM (Streaming Multiprocessor) can 
-have 16 warps executing simultaneously and 32 threads per warp so it can issue at minimum 512 memory accesses per 
-cycle. You can schedule more warps than that but a minimum estimate will do.
+            // What if we change the doubles on the host and need to update the device side memory?
+            for (int i = 0; i < doubles.Length; i++) { doubles[i] = i * Math.PI; }
 
-RTX 2060 336 GB/s / (30 SM's * 512 threads) = 0.0218 GB/s or just *22.4 MB/s per thread*
+            // We call MemoryBuffer.CopyFrom which copies any linear slice of doubles into the device side memory.
+            doublesOnDevice.CopyFrom(doubles, 0, 0, doubles.Length);
 
-#### So what?
-In the end computers need memory because programs need memory. There are a few things I think about as I program that I think help
+            // What if we change the doublesOnDevice and need to write that data into host memory?
+            doublesOnDevice.CopyTo(doubles, 0, 0, doubles.Length);
 
-1. If your code scans through memory linearly the GPU can optimize it by prefetching the data. This leads to the "struct of arrays"
- approach, more on that in the structs tutorial.
-2. GPU's take prefetching to the next level by having coalescent memory access, which I need a more in depth explaination of, but
-basically if threads are accessing memory in a linear way that the GPU can detect it can send one memory access for the whole chunk
-of threads. 
+            // You can copy data to and from MemoryBuffers into any array / span / memorybuffer that allocates the same
+            // type. for example:
+            double[] doubles2 = new double[doublesOnDevice.Length];
+            doublesOnDevice.CopyTo(doubles2, 0, 0, doubles2.Length);
 
-Again, this all boils down to the very simple notion that memory is slow, and it gets slower the farther it gets from the processor
+            // There are also helper functions, but be aware of what a function does.
+            // As an example this function is shorthand for the above two lines.
+            // It does a relatively slow memory allocation on the host.
+            double[] doubles3 = doublesOnDevice.GetAsArray();
 
+            // Notice that you cannot access memory in a MemoryBuffer or an ArrayView from host code.
+            // If you uncomment the following lines they should crash.
+            // doublesOnDevice[1] = 0;
+            // double d = doublesOnDevice[1];
+
+            // There is not much we can show with ArrayViews currently, but in the 
+            // Kernels Tutorial it will go over much more.
+            ArrayView<double> doublesArrayView = doublesOnDevice.View;
+
+            // do not forget to dispose of everything in the reverse order you constructed it.
+            doublesOnDevice.Dispose(); 
+            // note the doublesArrayView is now invalid, but does not need to be disposed.
+            accelerator.Dispose();
+            context.Dispose();
+        }
+    }
+}
+```

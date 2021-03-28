@@ -8,6 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Templates\Tutorial_02_Preface.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Templates\Tutorial_02_Preface.md" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ILGPU" Version="0.10.0" />
     <PackageReference Include="ILGPU.Algorithms" Version="0.10.0-beta1" />
     <PackageReference Include="Markdig" Version="0.24.0" />
