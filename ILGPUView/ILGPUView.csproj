@@ -8,14 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Templates\Tutorial_02_Preface.md" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="Templates\Tutorial_02_Preface.md" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="ILGPU" Version="0.10.0" />
     <PackageReference Include="ILGPU.Algorithms" Version="0.10.0-beta1" />
     <PackageReference Include="Markdig" Version="0.24.0" />
@@ -29,13 +21,15 @@
       <Generator>MSBuild:Compile</Generator>
     </None>
     <None Update="Templates\Table_Of_Contents.md">
-      <Generator>MSBuild:Compile</Generator>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Templates\Tutorial_01.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Templates\Tutorial_02.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Templates\Tutorial_02_Preface.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
