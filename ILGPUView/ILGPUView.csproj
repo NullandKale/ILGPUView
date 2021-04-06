@@ -29,7 +29,7 @@
     <None Update="Templates\Tutorial_02.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Templates\Tutorial_02_Preface.md">
+    <None Update="Templates\Primer_02.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

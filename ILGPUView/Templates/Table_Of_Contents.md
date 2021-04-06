@@ -1,5 +1,16 @@
 ﻿# ILGPUView Tutorials
 
+## Primers (How a GPU works)
+
+This series introduces how a GPU works. If you have programmed before 
+
+01 [A GPU is not a CPU](Primer_01.md)
+> This tutorial is a primer that goes over the performance quirks and the 
+
+02 [Memory and bandwidth and threads. Oh my!](Primer_02.md) 
+> This will hopefully give you a better understanding of how memory works in hardware and the performance
+> implications.
+
 ## Beginner (How ILGPU works)
 
 This series is meant to be a brief overview of ILGPU and how to use it. It assumes you have at least a little knowledge of how Cuda or OpenCL work. 
@@ -9,10 +20,6 @@ If you need a primer look to something like [this for Cuda](https://developer.nv
 > This tutorial covers the creating the Context and Accelerator objects which setup ILGPU for use. 
 > It's mostly boiler plate and does no computation but it does print info about your GPU if you have one.
 > There is some advice about ILGPU in here that makes it worth the quick read.
-
-02 [Preface: A rant about memory.](Tutorial_02_Preface.md) 
-> This will hopefully give you a better understanding of how memory works in hardware and the performance
-> implications. It is skippable.
 
 02 [MemoryBuffers and ArrayViews](Tutorial_02.md) (0.10.0)
 > This tutorial covers the basics for Host / Device memory management.
