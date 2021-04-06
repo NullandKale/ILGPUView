@@ -24,7 +24,7 @@ If you need a primer look to something like [this for Cuda](https://developer.nv
 02 [MemoryBuffers and ArrayViews](Tutorial_02.md) (0.10.0)
 > This tutorial covers the basics for Host / Device memory management.
 
-03 Kernels
+03 [Kernels](Tutorial_03.md)
 > This is where it all comes together. This covers actual code, on the actual GPU (or the CPU if you are testing / dont have a GPU). 
 
 04 Structs

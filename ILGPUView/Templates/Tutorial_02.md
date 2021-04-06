@@ -5,19 +5,26 @@ Welcome to the seccond ILGPU tutorial. In this tutorial we will cover the basics
 in terms of stack and heap objects, ref / in / out parameters, and GC. Once you
 introduce a coprocessor like a GPU memory gets a little more complex. 
 
-[Preface: A rant about memory.](Tutorial_02_Preface.md) 
-
-I wrote a preface to this tutorial that I believe will help you better understand how this 
-works in hardware. It is not necessary to read if you just want to learn how to use ILGPU.
-
-Before we get into this tutorial we need a bit of jargon.
+Starting in this tutorial we need a bit of jargon:
 
 * Device: the GPU or a GPU
 * Host: the computer that contains the device
 
+Each side can also have memory, to help keep it straight I will refer to it as:
+
+* Device Memory: the GPU memory
+* Host Memory: the computers memory
+
 In most computers the host and device each have there own seperate memory. There are some ways
-to pretend that they share memory in ILGPU, like ExchangeBuffers (more on that in a more advanced memory tutorial), but in general
-it is faster and uses less memory to manage both sides manually. 
+to pretend that they share memory in ILGPU, like ExchangeBuffers (more on that in a more advanced 
+memory tutorial), but for now I will manage both sides manually.
+
+To use memory you need to be able to allocate it, copy data into it, and copy data out of it.
+ILGPU provides an interface to do this. 
+
+NOTE: You will notice that all the memory is talked about in terms of arrays. If you want to pass 
+a single value into the GPU you can allocate an array of size 1 or pass it into the kernel as a 
+parameter, more on this in the Kernel tutorial and the Structs tutorial.
 
 # MemoryBuffer\<T\>
 The MemoryBuffer is the host side copy of memory allocated on the device. 
@@ -26,17 +33,46 @@ The MemoryBuffer is the host side copy of memory allocated on the device.
 * requires: using ILGPU.Runtime;
 * basic constructing: MemoryBuffer\<int\> OnDeviceInts = accelerator.Allocate\<int\>(1000);
 
+#### CopyFrom
+After allocating a MemoryBuffer you will probably want to load data into it. This can be done 
+using the CopyFrom method of a MemoryBuffer.
+
+Basic usage, copying everything from IntArray to OnDeviceInts
+* OnDeviceInts.CopyFrom(IntArray, sourceOffset, targetOffset, count)
+
+This works as you would expect. Starting at sourceOffset in IntArray and targetOffset in OnDeviceInts it 
+copies count values from IntArray into OnDeviceInts.
+
+#### CopyTo
+To copy memory out of a MemoyView and into an array on device you use CopyTo.
+
+Basic usage, copying everything from OnDeviceInts to IntArray
+* OnDeviceInts.CopyTo(IntArray, sourceOffset, targetOffset, count)
+
+This works just like CopyFrom, just backwards. Starting at sourceOffset in OnDeviceInts and targetOffset in IntArray it 
+copies count values from OnDeviceInts into IntArray.
+
+In both CopyTo and CopyFrom setting sourceOffset and targetOffset to 0 and count to IntArray.Length would copy all
+values.
+* OnDeviceInts.CopyFrom(IntArray, 0, 0, IntArray.Length)
+* OnDeviceInts.CopyTo(IntArray, 0, 0, IntArray.Length)
+
+
 # ArrayView\<T\>
-The ArrayView is the device side copy of memory allocated on the device via the host.
+The ArrayView is the device side copy of memory allocated on the device via the host. This is the side of the MemoryBuffer
+API that the kernels / GPU will interact with.
 
 * always obtained from a MemoryBuffer
 * requires: using ILGPU.Runtime;
 * basic constructing: ArrayView\<int\> ints = OnDeviceInts.View;
 
+Inside the kernel the ArrayView works exactly like you would expect a normal array to. Again, more on that in the 
+Kernel tutorial.
 
 ### Sample 02|01
 All device side memory management happens in the host code through the MemoryBuffer.
-The sample goes over the basics of managing memory via MemoryBuffers.
+The sample goes over the basics of managing memory via MemoryBuffers. There will be far more
+in depth memory management in the later tutorials.
 
 ```C#
 using System;

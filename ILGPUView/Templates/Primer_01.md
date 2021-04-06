@@ -124,7 +124,7 @@ namespace Primer_01
     }
 }
 ```
-You do not need to understand what is going on in the GPU example to see that the Parallel.For code uses the same
+You do not need to understand what is going on in the kernel example to see that the Parallel.For code uses the same
 API. The major differences are due to how memory is handled.
 
 Parallel.For and Kernels both have the same potential for race conditions, and for each you must take care to prevent them.
