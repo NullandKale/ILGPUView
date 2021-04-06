@@ -20,6 +20,9 @@
     <None Update="notes.txt">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <None Update="Templates\Primer_01.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Templates\Table_Of_Contents.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

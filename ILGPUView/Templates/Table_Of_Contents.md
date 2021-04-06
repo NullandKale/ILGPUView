@@ -2,10 +2,10 @@
 
 ## Primers (How a GPU works)
 
-This series introduces how a GPU works. If you have programmed before 
+This series introduces how a GPU works. If you have programmed with CUDA or OpenCL before you can probably skip this.
 
 01 [A GPU is not a CPU](Primer_01.md)
-> This tutorial is a primer that goes over the performance quirks and the 
+> This page will provide a quick rundown the basics of how kernels (think GPU programs) run.
 
 02 [Memory and bandwidth and threads. Oh my!](Primer_02.md) 
 > This will hopefully give you a better understanding of how memory works in hardware and the performance
@@ -25,6 +25,7 @@ If you need a primer look to something like [this for Cuda](https://developer.nv
 > This tutorial covers the basics for Host / Device memory management.
 
 03 Kernels
+> This is where it all comes together. This covers actual code, on the actual GPU (or the CPU if you are testing / dont have a GPU). 
 
 04 Structs
 

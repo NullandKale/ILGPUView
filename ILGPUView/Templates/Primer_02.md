@@ -1,8 +1,7 @@
-﻿# Tutorial 02 Preface
+﻿# Primer 02: Memory
 
-I am about to go on a bit of a rant about memory. If you just want to get to the 
-programming you can skip ahead to MemoryBuffers. The following is my understanding of 
-the performance quirks with GPU's and memory and cache and coalescent memory access.
+The following is my understanding of the performance quirks with GPU's due to memory and cache and coalescent memory access.
+Just like with Primer 01, if you havea decent understanding of CUDA or OpenCL you can skip this.
 
 Ok, buckle up.
 
