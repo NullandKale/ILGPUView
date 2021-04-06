@@ -5,7 +5,7 @@ Just like with Primer 01, if you havea decent understanding of CUDA or OpenCL yo
 
 Ok, buckle up.
 
-## A Rant about Memory
+## Memory and bandwidth and threads. Oh my!
 
 #### Computers need memory, and memory is slow<sup>0</sup>. (Like, really slow)
 Back in the day (I assume, the first computer I remember using had DDR-200) computer memory
