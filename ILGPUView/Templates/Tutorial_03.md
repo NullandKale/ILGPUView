@@ -3,6 +3,9 @@ In this tutorial we actually do work on the GPU!
 
 ## Lets start with a sample.
 I think the easiest way to explain this is taking the simplest example I can think of and decomposing it. 
+I would recommend typing this code into a new project, adding ILGPU via nuget, and playing with the code.
+Add Console.WriteLines, change the data, or the kernel, output the data, whatever. Interacting with the code
+**WILL** help you learn.
 
 This is a modified version of the sample from Primer 01.
 ```C#
