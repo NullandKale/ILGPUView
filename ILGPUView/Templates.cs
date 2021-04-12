@@ -1,4 +1,5 @@
 ﻿using ILGPU;
+using ILGPU.Algorithms;
 using ILGPU.Runtime;
 using ILGPU.Runtime.CPU;
 using ILGPU.Runtime.Cuda;
@@ -6,17 +7,20 @@ using ILGPU.Runtime.OpenCL;
 using ILGPUView.Files;
 using System;
 using System.Linq;
+using System.Threading;
 
 namespace ILGPUViewTest
 {
     public static class Test
     {
         static Action<Index2, FloatBitmapCanvas, ArrayView<byte>> outputKernel;
-        static Action<Index2, FloatBitmapCanvas> userKernel;
+        static Action<Index2, FloatBitmapCanvas, Vector3> userKernel;
+        static Action<Index1, FloatBitmapCanvas> deviceKernel;
 
         static bool dir = true;
         static FloatBitmapCanvas c;
         static MemoryBuffer2D<Vector3> canvasData;
+        static MemoryBuffer<Particle> particleData;
         static MemoryBuffer<byte> bitmapData;
 
         // DO NOT CHANGE FUNCTION PARAMETERS
@@ -26,12 +30,25 @@ namespace ILGPUViewTest
         public static void setup(Accelerator accelerator, int width, int height)
         {
             canvasData = accelerator.Allocate<Vector3>(width, height);
-            c = new FloatBitmapCanvas(canvasData, width, height);
+            int numParticles = 10_000;
+            Particle[] particles = new Particle[numParticles];
+            Random rng = new Random(1921287);
+            for (int i = 0; i < numParticles; i++)
+            {
+                Vector2 pos = new Vector2((float)rng.NextDouble() * width, (float)rng.NextDouble() * height);
+                //Vector2 vel = new Vector2((((float)rng.NextDouble() * 2f) - 1f) / 100f, (((float)rng.NextDouble() * 2f) - 1f) / 100f);
+                Vector2 vel = new Vector2(0f, 0f);
+                Vector3 color = new Vector3((float)rng.NextDouble(), (float)rng.NextDouble(), (float)rng.NextDouble());
+                particles[i] = new Particle(pos, vel, color);
+            }
+            particleData = accelerator.Allocate<Particle>(particles);
+            c = new FloatBitmapCanvas(canvasData, particleData, width, height);
 
             bitmapData = accelerator.Allocate<byte>(width * height * 3);
 
             outputKernel = accelerator.LoadAutoGroupedStreamKernel<Index2, FloatBitmapCanvas, ArrayView<byte>>(FloatBitmapCanvas.CanvasToBitmap);
-            userKernel = accelerator.LoadAutoGroupedStreamKernel<Index2, FloatBitmapCanvas>(kernel);
+            userKernel = accelerator.LoadAutoGroupedStreamKernel<Index2, FloatBitmapCanvas, Vector3>(kernel);
+            deviceKernel = accelerator.LoadAutoGroupedStreamKernel<Index1, FloatBitmapCanvas>(particleKernel);
         }
 
         // DO NOT CHANGE FUNCTION PARAMETERS
@@ -39,10 +56,13 @@ namespace ILGPUViewTest
         // loop is called until it returns false
         public static bool loop(Accelerator accelerator, ref byte[] bitmap)
         {
-            userKernel(canvasData.Extent, c);
+            userKernel(canvasData.Extent, c, new Vector3(0.1f, 0.1f, 0.1f));
+            deviceKernel((Index1)particleData.Extent, c);
             outputKernel(canvasData.Extent, c, bitmapData);
 
             accelerator.Synchronize();
+
+            //Thread.Sleep(30);
 
             bitmapData.CopyTo(bitmap, 0, 0, bitmap.Length);
 
@@ -66,105 +86,68 @@ namespace ILGPUViewTest
             return true;
         }
 
-        public static void Tutorial02()
-        {
-            Context context = new Context();
-
-            bool debug = false;
-            Accelerator accelerator = null;
-            if (CudaAccelerator.CudaAccelerators.Length > 0 && !debug)
-            {
-                accelerator = new CudaAccelerator(context);
-            }
-            else if (CLAccelerator.AllCLAccelerators.Length > 0 && !debug)
-            {
-                accelerator = new CLAccelerator(context, CLAccelerator.AllCLAccelerators.FirstOrDefault());
-            }
-            else
-            {
-                accelerator = new CPUAccelerator(context);
-            }
-
-            MemoryBuffer<float> floatBuffer = accelerator.Allocate<float>(10_000_00);
-            floatBuffer.MemSetToZero();
-
-            int[] intData = new int[100_000];
-            MemoryBuffer<int> intBuffer = accelerator.Allocate(intData);
-            
-            intBuffer.CopyTo(intData, 0, 0, intData.Length);
-
-            intData[1] = 1;
-            
-            intBuffer.CopyFrom(intData, 0, 0, intData.Length);
-
-
-            float[] output = floatBuffer.GetAsArray();
-
-            accelerator.Synchronize();
-
-
-            intBuffer.Dispose();
-            floatBuffer.Dispose();
-            accelerator.Dispose();
-
-            for(int i = 0; i < floatBuffer.Length; i++)
-            {
-                Console.Write(output[i] + " ");
-                if(i % 25 == 24)
-                {
-                    Console.WriteLine();
-                }
-            }
-        }
-
-        public static float[] Tutorial03()
-        {
-            Context context = new Context();
-
-            bool debug = false;
-            Accelerator accelerator = null;
-            if (CudaAccelerator.CudaAccelerators.Length > 0 && !debug)
-            {
-                accelerator = new CudaAccelerator(context);
-            }
-            else if (CLAccelerator.AllCLAccelerators.Length > 0 && !debug)
-            {
-                accelerator = new CLAccelerator(context, CLAccelerator.AllCLAccelerators.FirstOrDefault());
-            }
-            else
-            {
-                accelerator = new CPUAccelerator(context);
-            }
-
-            Action<Index1, ArrayView<float>, float> addKernel =
-                accelerator.LoadAutoGroupedStreamKernel<Index1, ArrayView<float>, float>(AddKernel);
-
-            MemoryBuffer<float> buffer = accelerator.Allocate<float>(10_000_00);
-            buffer.MemSetToZero();
-            addKernel(buffer.Length, buffer.View, 10.0f);
-            float[] output = buffer.GetAsArray();
-            accelerator.Synchronize();
-
-            buffer.Dispose();
-            accelerator.Dispose();
-
-            return output;
-        }
-
-        static void AddKernel(Index1 index, ArrayView<float> output, float val)
-        {
-            output[index] += val;
-        }
-
         public static void dispose()
         {
             canvasData.Dispose();
             bitmapData.Dispose();
         }
 
-        public static void kernel(Index2 index, FloatBitmapCanvas c)
+        public static void kernel(Index2 index, FloatBitmapCanvas c, Vector3 clearColor)
         {
-            c.setColor(index, new Vector3((float)index.X / (float)c.width, (float)index.Y / (float)c.height, (float)c.tick / 255f));
+            c.setColor(index, clearColor);
+        }
+
+        public static void particleKernel(Index1 index, FloatBitmapCanvas c)
+        {
+            Particle p = c.particles[index];
+            p.updatePosition(c.width, c.height, c.particles);
+            Index2 position = new Index2((int)p.position.x, (int)p.position.y);
+            c.setColor(position, new Vector3();
+            c.particles[index] = p;
+        }
+    }
+
+    public struct Vector2
+    {
+        public float x;
+        public float y;
+
+        public Vector2(float x, float y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+        public static Vector2 operator +(Vector2 v1, Vector2 v2)
+        {
+            return new Vector2(v1.x + v2.x, v1.y + v2.y);
+        }
+
+        public static Vector2 operator -(Vector2 v1, Vector2 v2)
+        {
+            return new Vector2(v1.x - v2.x, v1.y - v2.y);
+        }
+
+        public static Vector2 operator *(Vector2 v1, Vector2 v2)
+        {
+            return new Vector2(v1.x * v2.x, v1.y * v2.y);
+        }
+
+        public static Vector2 operator *(Vector2 v1, float scalar)
+        {
+            return new Vector2(v1.x * scalar, v1.y * scalar);
+        }
+
+        public void clamp(Vector2 min, Vector2 max)
+        {
+            this.x = XMath.Clamp(x, min.x, max.x);
+            this.y = XMath.Clamp(y, min.y, max.y);
+
+        }
+
+        public float magnitude()
+        {
+            return XMath.Sqrt((x * x) + (y * y));
         }
     }
 
@@ -180,18 +163,80 @@ namespace ILGPUViewTest
             this.y = y;
             this.z = z;
         }
+
+        public Vector3(float scalar)
+        {
+            this.x = scalar;
+            this.y = scalar;
+            this.z = scalar;
+        }
+    }
+
+    public struct Particle
+    {
+        public Vector2 position;
+        public Vector2 velocity;
+        public Vector2 acceleration;
+        public Vector3 color;
+
+        public Particle(Vector2 position, Vector2 velocity, Vector3 color)
+        {
+            this.position = position;
+            this.velocity = velocity;
+            this.acceleration = new Vector2(0f, 0f);
+            this.color = color;
+        }
+
+        public void updateAcceleration(ArrayView<Particle> particles, float softening)
+        {
+            for (int i = 0; i < particles.Length; i++)
+            {
+                Vector2 dPos = particles[i].position - position;
+                float inv_r3 = XMath.Pow((float)((dPos.x * dPos.x) + (dPos.y * dPos.y) + (softening * softening)), -1.5f);
+                acceleration += (dPos * inv_r3);
+            }
+
+            acceleration.clamp(new Vector2(-0.5f, -0.5f), new Vector2(0.5f, 0.5f));
+        }
+
+        public void updatePosition(int width, int height, ArrayView<Particle> particles)
+        {
+            Vector2 newVelocity = velocity + (acceleration * 0.5f);
+            Vector2 newPosition = position + newVelocity;
+            updateAcceleration(particles, 0.001f);
+            newVelocity += acceleration * 0.5f;
+            
+            //if (newPosition.x <= 0 || newPosition.x >= width)
+            //{
+            //    acceleration = new Vector2(0f, 0f);
+            //    newVelocity.x *= -1f;
+            //}
+
+            //if (newPosition.y <= 0 || newPosition.y >= height)
+            //{
+            //    acceleration = new Vector2(0f, 0f);
+            //    newVelocity.y *= -1f;
+            //}
+
+            newVelocity.clamp(new Vector2(-2f, -2f), new Vector2(2f, 2f));
+
+            position = newPosition;
+            velocity = newVelocity;
+        }
     }
 
     public struct FloatBitmapCanvas
     {
         public ArrayView2D<Vector3> canvas;
+        public ArrayView<Particle> particles;
         public int width;
         public int height;
         public int tick;
 
-        public FloatBitmapCanvas(ArrayView2D<Vector3> canvas, int width, int height)
+        public FloatBitmapCanvas(ArrayView2D<Vector3> canvas, ArrayView<Particle> particles, int width, int height)
         {
             this.canvas = canvas;
+            this.particles = particles;
             this.width = width;
             this.height = height;
             tick = 0;
@@ -199,7 +244,11 @@ namespace ILGPUViewTest
 
         public void setColor(Index2 index, Vector3 c)
         {
-            canvas[index] = c;
+            if ((index.X >= 0) && (index.X < width) && (index.Y >= 0) && (index.Y < height))
+            {
+                canvas[index] = c;
+
+            }
         }
 
         public static void CanvasToBitmap(Index2 index, FloatBitmapCanvas c, ArrayView<byte> bitmap)

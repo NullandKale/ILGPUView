@@ -27,7 +27,7 @@ namespace ILGPUView.Files
 
     public class FileRunner
     {
-        public static readonly bool DEBUG = false;
+        public static readonly bool DEBUG = true;
 
         public Context context;
         public Accelerator accelerator;
@@ -94,6 +94,7 @@ namespace ILGPUView.Files
         public bool InitializeILGPU()
         {
             context = new Context();
+            context.EnableAlgorithms();
 
             switch (type)
             {

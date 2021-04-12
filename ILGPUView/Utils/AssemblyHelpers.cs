@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using ILGPU.Algorithms;
+using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -72,7 +73,7 @@ namespace ILGPUView.Utils
                     refs.AddRange(searchForMore(assem));
                 }
             }
-
+            refs.Add(XMath.PI.GetType().Assembly.Location);
             return refs;
         }
 

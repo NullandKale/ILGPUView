@@ -130,14 +130,17 @@ namespace ILGPUView.Files
 
         public bool TryCompile()
         {
-            if(CompileCode())
-            {
-                return LoadAssembly();
-            }
-            else
-            {
-                return false;
-            }
+            //if(CompileCode())
+            //{
+            //    return LoadAssembly();
+            //}
+            //else
+            //{
+            //    return false;
+            //}
+            compiled = true;
+            loaded = true;
+            return true;
         }
 
         public void Undo()
