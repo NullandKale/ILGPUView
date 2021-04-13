@@ -71,7 +71,7 @@ namespace ILGPUView.Files
 
         public void updateFileContents(string newFileContents)
         {
-            if(!newFileContents.Equals(fileContents))
+            if(!fileContents.Equals(newFileContents))
             {
                 fileContents = newFileContents;
                 needsSave = true;
@@ -130,17 +130,21 @@ namespace ILGPUView.Files
 
         public bool TryCompile()
         {
-            //if(CompileCode())
-            //{
-            //    return LoadAssembly();
-            //}
-            //else
-            //{
-            //    return false;
-            //}
-            compiled = true;
-            loaded = true;
-            return true;
+            if(FileRunner.DEBUG)
+            {
+                compiled = true;
+                loaded = true;
+                return true;
+            }
+
+            if (CompileCode())
+            {
+                return LoadAssembly();
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public void Undo()

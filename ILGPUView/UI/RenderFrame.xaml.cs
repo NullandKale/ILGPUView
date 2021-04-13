@@ -25,6 +25,8 @@ namespace ILGPUView.UI
 
         public int width;
         public int height;
+        public int scaledWidth;
+        public int scaledHeight;
         public WriteableBitmap wBitmap;
         public Int32Rect rect;
 
@@ -48,60 +50,27 @@ namespace ILGPUView.UI
             UpdateResolution();
         }
 
-        private void UpdateResolution()
+        public void UpdateResolution()
         {
             if (scale > 0)
             {
-                height = (int)(height * scale);
-                width = (int)(width * scale);
+                scaledHeight = (int)(height * scale);
+                scaledWidth = (int)(width * scale);
             }
             else
             {
-                height = (int)(height / -scale);
-                width = (int)(width / -scale);
+                scaledHeight = (int)(height / -scale);
+                scaledWidth = (int)(width / -scale);
             }
 
-            width += ((width * 3) % 4);
+            scaledWidth += ((scaledWidth * 3) % 4);
 
-            wBitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Rgb24, null);
+            wBitmap = new WriteableBitmap(scaledWidth, scaledHeight, 96, 96, PixelFormats.Rgb24, null);
             Frame.Source = wBitmap;
-            rect = new Int32Rect(0, 0, width, height);
-            framebuffer = new byte[width * height * 3];
-            onResolutionChanged(width, height);
+            rect = new Int32Rect(0, 0, scaledWidth, scaledHeight);
+            framebuffer = new byte[scaledWidth * scaledHeight * 3];
+            onResolutionChanged(scaledWidth, scaledHeight);
         }
-
-        public void UpdateScale()
-        {
-            if (frameTime < 0)
-            {
-                scale -= 0.1;
-            }
-            else if (frameTime > 5)
-            {
-                if (scale < 1)
-                {
-                    scale += 0.1;
-                }
-            }
-
-            if (scale >= 0 && scale < 1)
-            {
-                scale = -1;
-            }
-
-            if (scale < -100)
-            {
-                scale = -100;
-            }
-
-            if (scale > 1)
-            {
-                scale = 1;
-            }
-
-            UpdateResolution();
-        }
-
         public void update(ref byte[] data)
         {
             if (data.Length == wBitmap.PixelWidth * wBitmap.PixelHeight * 3)

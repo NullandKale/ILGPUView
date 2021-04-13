@@ -73,7 +73,6 @@ namespace ILGPUView.Utils
                     refs.AddRange(searchForMore(assem));
                 }
             }
-            refs.Add(XMath.PI.GetType().Assembly.Location);
             return refs;
         }
 

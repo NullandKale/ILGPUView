@@ -180,9 +180,9 @@ namespace ILGPUView
             {
                 if(DLLTestMode)
                 {
-                    byte[] testBitmap = new byte[outputTabs.render.width * outputTabs.render.height * 3];
+                    byte[] testBitmap = new byte[outputTabs.render.scaledWidth * outputTabs.render.scaledHeight * 3];
                     fileTabs.file.compiledCode.Seek(0, SeekOrigin.Begin);
-                    fileTabs.file.compiledCode.Read(testBitmap, 0, Math.Min((int)fileTabs.file.compiledCode.Length, outputTabs.render.width * outputTabs.render.height * 3));
+                    fileTabs.file.compiledCode.Read(testBitmap, 0, Math.Min((int)fileTabs.file.compiledCode.Length, outputTabs.render.scaledWidth * outputTabs.render.scaledHeight * 3));
                     outputTabs.render.update(ref testBitmap);
                 }
                 else
@@ -220,6 +220,15 @@ namespace ILGPUView
                     {
                         outputTabs.log.clear();
                         status.Content = "Compiling " + fileTabs.file.name;
+
+                        if (testMode.IsChecked == true)
+                        {
+                            FileRunner.DEBUG = true;
+                        }
+                        else
+                        {
+                            FileRunner.DEBUG = false;
+                        }
 
                         Task.Run(() =>
                         {
@@ -372,6 +381,20 @@ namespace ILGPUView
             if (file.TryLoad())
             {
                 fileTabs.AddCodeFile(file);
+            }
+        }
+
+        float[] scales = { -4f, -3f, -2f, 1f, 2f };
+
+        private void resolutionScalePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if(outputTabs != null && outputTabs.render != null)
+            {
+                if (outputTabs.render.scale != scales[resolutionScalePicker.SelectedIndex])
+                {
+                    outputTabs.render.scale = scales[resolutionScalePicker.SelectedIndex];
+                    outputTabs.render.UpdateResolution();
+                }
             }
         }
     }

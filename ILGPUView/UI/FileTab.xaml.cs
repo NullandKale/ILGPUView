@@ -162,7 +162,7 @@ namespace ILGPUView.UI
 
             if (onTextChanged != null)
             {
-                onTextChanged(displayedText);
+                onTextChanged(new TextRange(code.Document.ContentStart, code.Document.ContentEnd).Text);
             }
         }
 

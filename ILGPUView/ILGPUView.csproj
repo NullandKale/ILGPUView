@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ILGPU" Version="0.10.0" />
+    <PackageReference Include="ILGPU" Version="0.10.1" />
     <PackageReference Include="ILGPU.Algorithms" Version="0.10.0-beta1" />
     <PackageReference Include="Markdig" Version="0.24.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.10.0-1.final" />

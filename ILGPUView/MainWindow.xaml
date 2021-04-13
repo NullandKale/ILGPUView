@@ -46,6 +46,14 @@
             </ToolBar>
         </ToolBarTray>
         <StackPanel Grid.Row="0" HorizontalAlignment="Right" Orientation="Horizontal">
+            <CheckBox VerticalContentAlignment="Center" x:Name="testMode" IsChecked="False" Content="TEST MODE"/>
+            <ComboBox x:Name="resolutionScalePicker" MinWidth="80" Margin="10 0 10 0" SelectionChanged="resolutionScalePicker_SelectionChanged">
+                <ComboBoxItem Content="Scale: -4"/>
+                <ComboBoxItem Content="Scale: -3"/>
+                <ComboBoxItem Content="Scale: -2"/>
+                <ComboBoxItem IsSelected="True" Content="Scale: 1"/>
+                <ComboBoxItem Content="Scale: 2"/>
+            </ComboBox>
             <ComboBox x:Name="acceleratorPicker" MinWidth="80" Margin="10 0 10 0">
                 <ComboBoxItem x:Name="aPick0" IsSelected="True" Content="Default "/>
                 <ComboBoxItem x:Name="aPick1" Content="CPU "/>

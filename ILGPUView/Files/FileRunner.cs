@@ -27,7 +27,7 @@ namespace ILGPUView.Files
 
     public class FileRunner
     {
-        public static readonly bool DEBUG = true;
+        public static bool DEBUG = false;
 
         public Context context;
         public Accelerator accelerator;
@@ -93,7 +93,7 @@ namespace ILGPUView.Files
 
         public bool InitializeILGPU()
         {
-            context = new Context();
+            context = new Context(ContextFlags.EnableAssertions);
             context.EnableAlgorithms();
 
             switch (type)
@@ -134,7 +134,6 @@ namespace ILGPUView.Files
         public void Stop()
         {
             isRunning = false;
-            dispose();
         }
 
         private void renderThreadMain()
@@ -146,7 +145,7 @@ namespace ILGPUView.Files
                 crashed = false;
                 if (DEBUG)
                 {
-                    Test.setup(accelerator, output.render.width, output.render.height);
+                    Test.setup(accelerator, output.render.scaledWidth, output.render.scaledHeight);
                     setupTimer.Stop();
                     onTimersUpdate(setupTimer.Elapsed, -1);
                 }
@@ -164,7 +163,7 @@ namespace ILGPUView.Files
                     }
                     else
                     {
-                        code.userCodeSetup(accelerator, output.render.width, output.render.height);
+                        code.userCodeSetup(accelerator, output.render.scaledWidth, output.render.scaledHeight);
                         setupTimer.Stop();
                         onTimersUpdate(setupTimer.Elapsed, -1);
                     }
@@ -173,13 +172,20 @@ namespace ILGPUView.Files
                 while (isRunning)
                 {
                     timer.startUpdate();
+                    bool notStop = true;
+
                     if (DEBUG)
                     {
-                        isRunning = Test.loop(accelerator, ref output.render.framebuffer);
+                        notStop = Test.loop(accelerator, ref output.render.framebuffer);
                     }
                     else
                     {
-                        isRunning = code.userCodeLoop(accelerator, ref output.render.framebuffer);
+                        notStop = code.userCodeLoop(accelerator, ref output.render.framebuffer);
+                    }
+
+                    if(notStop == false)
+                    {
+                        isRunning = false;
                     }
 
                     framebufferSwap();
@@ -188,6 +194,7 @@ namespace ILGPUView.Files
                 }
 
                 isRunning = false;
+                dispose();
                 onRunStop();
             }
             catch (Exception e)
