@@ -36,6 +36,7 @@ namespace ILGPUView.Files
         public CodeFile code;
         public OutputTabs output;
         public AcceleratorType type;
+        public int OptimizationLevel;
 
         private bool isRunning = false;
         public bool crashed = false;
@@ -45,11 +46,12 @@ namespace ILGPUView.Files
         private Action framebufferSwap;
         private Action<TimeSpan, double> onTimersUpdate;
 
-        public FileRunner(CodeFile code, OutputTabs output, AcceleratorType type, Action onRunStop, Action framebufferSwap, Action<TimeSpan, double> onTimersUpdate)
+        public FileRunner(CodeFile code, OutputTabs output, AcceleratorType type, int OptimizationLevel, Action onRunStop, Action framebufferSwap, Action<TimeSpan, double> onTimersUpdate)
         {
             this.code = code;
             this.output = output;
             this.type = type;
+            this.OptimizationLevel = OptimizationLevel;
             this.onRunStop = onRunStop;
             this.framebufferSwap = framebufferSwap;
             this.onTimersUpdate = onTimersUpdate;
@@ -93,7 +95,7 @@ namespace ILGPUView.Files
 
         public bool InitializeILGPU()
         {
-            context = new Context(ContextFlags.EnableAssertions);
+            context = new Context((ILGPU.IR.Transformations.OptimizationLevel)OptimizationLevel);
             context.EnableAlgorithms();
 
             switch (type)

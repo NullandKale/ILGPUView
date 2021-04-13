@@ -47,6 +47,11 @@
         </ToolBarTray>
         <StackPanel Grid.Row="0" HorizontalAlignment="Right" Orientation="Horizontal">
             <CheckBox VerticalContentAlignment="Center" x:Name="testMode" IsChecked="False" Content="TEST MODE"/>
+            <ComboBox x:Name="optimizationLevel" MinWidth="80" Margin="10 0 10 0">
+                <ComboBoxItem IsSelected="True" Content="O0 Debug"/>
+                <ComboBoxItem Content="O1 Release"/>
+                <ComboBoxItem Content="O2"/>
+            </ComboBox>
             <ComboBox x:Name="resolutionScalePicker" MinWidth="80" Margin="10 0 10 0" SelectionChanged="resolutionScalePicker_SelectionChanged">
                 <ComboBoxItem Content="Scale: -4"/>
                 <ComboBoxItem Content="Scale: -3"/>
@@ -76,6 +81,7 @@
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Stretch">
             <Label x:Name="status" Content="Press Compile then Run" HorizontalContentAlignment="Left" VerticalAlignment="Center"/>
             <Label x:Name="resolution" Margin="10 0" HorizontalAlignment="Right" HorizontalContentAlignment="Right"/>
+            <Label x:Name="update" Margin="10 0" HorizontalAlignment="Right" HorizontalContentAlignment="Right"/>
         </StackPanel>
     </Grid>
 </Window>

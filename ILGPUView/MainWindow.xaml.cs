@@ -143,7 +143,10 @@ namespace ILGPUView
 
         private void OnTimerUpdate(TimeSpan setupTime, double lastUpdateMS)
         {
-            //Console.WriteLine("Setup: " + setupTime + " last update: " + lastUpdateMS);
+            Dispatcher.InvokeAsync(() =>
+            {
+                update.Content = "Setup time: " + setupTime + " " + lastUpdateMS + " FPS";
+            });
         }
 
         private void OnRunStop()
@@ -213,7 +216,7 @@ namespace ILGPUView
                             sampleRunStatus[fileTabs.file.assemblyNamespace] = "Attempting to Run";
                         }
 
-                        fileRunner = new FileRunner(fileTabs.file, outputTabs, (AcceleratorType)acceleratorPicker.SelectedIndex, OnRunStop, FrameBufferSwap, OnTimerUpdate);
+                        fileRunner = new FileRunner(fileTabs.file, outputTabs, (AcceleratorType)acceleratorPicker.SelectedIndex, optimizationLevel.SelectedIndex, OnRunStop, FrameBufferSwap, OnTimerUpdate);
                         fileRunner.Run();
                     }
                     else
