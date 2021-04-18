@@ -1,21 +1,15 @@
 ﻿using ILGPUView.Files;
 using ILGPUView.UI;
 using ILGPUView.Utils;
-using ILGPUViewTest;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace ILGPUView
 {
@@ -339,21 +333,6 @@ namespace ILGPUView
             }
         }
 
-        private void TutorialClicked(object sender, RoutedEventArgs e)
-        {
-            if(sender is MenuItem)
-            {
-                if(int.TryParse(((string)((MenuItem)sender).Header).Split(" ")[0], out int tutorial))
-                {
-                    CodeFile file = Templates.getTutorial(tutorial);
-                    if(file != null)
-                    {
-                        fileTabs.AddCodeFile(file);
-                    }
-                }
-            }
-        }
-
         private void OpenLink_Click(object sender, RoutedEventArgs e)
         {
             OpenTextLinkWindow openTextLink = new OpenTextLinkWindow();
@@ -378,9 +357,9 @@ namespace ILGPUView
             fileTabs.Undo();
         }
 
-        private void TOC_Click(object sender, RoutedEventArgs e)
+        private void TutorialClicked(object sender, RoutedEventArgs e)
         {
-            CodeFile file = new CodeFile("Table_Of_Contents.md", ".\\Templates", OutputType.terminal, TextType.markdown);
+            CodeFile file = new CodeFile("Home.md", ".\\Wiki", OutputType.terminal, TextType.markdown);
             if (file.TryLoad())
             {
                 fileTabs.AddCodeFile(file);

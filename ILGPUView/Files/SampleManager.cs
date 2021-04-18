@@ -14,6 +14,7 @@ namespace ILGPUView.Files
 
         private Action OnSearchDone;
         private Task searchTask;
+
         private Dictionary<string, CodeFile> samples;
 
         public SampleManager(FileTabs fileTabs, Action OnSearchDone)
@@ -80,6 +81,7 @@ namespace ILGPUView.Files
                         }
 
                         this.samples = samples;
+
                         OnSearchDone();
                     }
                     catch(Exception e)

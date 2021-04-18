@@ -5,6 +5,7 @@ using Microsoft.CSharp;
 using Neo.Markdig.Xaml;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -66,23 +67,10 @@ namespace ILGPUView.UI
                     ParseTextForCode(text);
                     break;
                 case TextType.markdown:
-                    ParseTextForMarkdown(text);
-                    code.Background = new SolidColorBrush(Color.FromRgb(255, 255, 255));
                     break;
             }
 
             code.TextChanged += Code_TextChanged;
-        }
-
-        private void ParseTextForMarkdown(string text)
-        {
-            displayedText = text;
-            var doc = MarkdownXaml.ToFlowDocument(displayedText,
-                new MarkdownPipelineBuilder()
-                .UseXamlSupportedExtensions()
-                .Build()
-            );
-            code.Document = doc;
         }
 
         private void ParseTextForCode(string text)

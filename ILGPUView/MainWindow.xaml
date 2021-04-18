@@ -24,16 +24,8 @@
                         <MenuItem Header="Open Bitmap File" Click="OpenBFile_Click"/>
                         <MenuItem Header="Open Terminal File" Click="OpenTFile_Click"/>
                         <MenuItem Header="Examples">
+                            <MenuItem Header="Tutorial" Click="TutorialClicked"/>
                             <MenuItem x:Name="samples" Header="ILGPU.Samples"/>
-                            <MenuItem Header="Tutorial">
-                                <MenuItem Header="TableOfContents" Click="TOC_Click"/>
-                                <MenuItem Header="01 Context and Accelerators" Click="TutorialClicked"/>
-                                <MenuItem Header="02 MemoryBuffers and ArrayViews" Click="TutorialClicked"/>
-                                <MenuItem Header="03 Kernels" Click="TutorialClicked"/>
-                                <MenuItem Header="04 Structs" Click="TutorialClicked"/>
-                                <MenuItem Header="05 Streams" Click="TutorialClicked"/>
-                                <MenuItem Header="06 Algorithms" Click="TutorialClicked"/>
-                            </MenuItem>
                         </MenuItem>
                     </MenuItem>
                 </Menu>

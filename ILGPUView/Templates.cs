@@ -11,38 +11,8 @@ using System.Threading;
 
 namespace ILGPUView
 {
-    public delegate void setupDelegate(Accelerator accelerator, int width, int height);
-    public delegate bool loopDelegate(Accelerator accelerator, ref byte[] bitmap);
-    public delegate void disposeDelegate();
-    public delegate void terminalDelegate();
-
     public class Templates
     {
-        public static CodeFile getTutorial(int ID)
-        {
-            CodeFile file = null;
-
-            switch (ID)
-            {
-                case 1:
-                    file = new CodeFile("Tutorial_01.md", ".\\Templates", OutputType.terminal, TextType.markdown);
-                    break;
-                case 2:
-                    file = new CodeFile("Tutorial_02.cs", ".\\Templates", OutputType.terminal, TextType.markdown);
-                    break;
-            }
-
-            if(file != null)
-            {
-                if(file.TryLoad())
-                {
-                    return file;
-                }
-            }
-
-            return null;
-        }
-
         public static readonly string terminalTemplate = @"
 using System;
 using ILGPU;

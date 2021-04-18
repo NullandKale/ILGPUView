@@ -1,3 +1,6 @@
 [submodule "ILGPU.Samples"]
 	path = ILGPU.Samples
 	url = https://github.com/m4rs-mt/ILGPU.Samples.git
+[submodule "ILGPUWiki"]
+	path = ILGPUWiki
+	url = https://github.com/NullandKale/ILGPUWiki.git

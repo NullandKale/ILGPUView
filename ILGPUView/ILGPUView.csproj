@@ -20,25 +20,10 @@
     <None Update="notes.txt">
       <Generator>MSBuild:Compile</Generator>
     </None>
-    <None Update="Templates\Primer_01.md">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Templates\Table_Of_Contents.md">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Templates\Tutorial_01.md">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Templates\Tutorial_02.md">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Templates\Primer_02.md">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy &quot;$(SolutionDir)ILGPU.Samples\Src\&quot; &quot;$(OutDir)Samples\&quot; /E /Y" />
+    <Exec Command="xcopy &quot;$(SolutionDir)ILGPU.Samples\Src\&quot; &quot;$(OutDir)Samples\&quot; /E /Y&#xD;&#xA;xcopy &quot;$(SolutionDir)ILGPUWiki\&quot; &quot;$(OutDir)Wiki\&quot; /E /Y" />
   </Target>
 
 </Project>

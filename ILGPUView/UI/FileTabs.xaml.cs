@@ -151,14 +151,23 @@ namespace ILGPUView.UI
                     }
                 };
                 item.Header = header;
-                item.Content = new FileTab(code, (string newText) =>
+                switch (code.textType)
                 {
-                    code.updateFileContents(newText);
-                    if (onCurrentFileUpdated != null)
-                    {
-                        onCurrentFileUpdated();
-                    }
-                });
+                    case TextType.markdown:
+                        item.Content = new MarkdownTab(this, code);
+                        break;
+                    case TextType.code:
+                        item.Content = new FileTab(code, (string newText) =>
+                        {
+                            code.updateFileContents(newText);
+                            if (onCurrentFileUpdated != null)
+                            {
+                                onCurrentFileUpdated();
+                            }
+                        });
+
+                        break;
+                }
 
                 displayedFiles.Add(code);
                 file = code;

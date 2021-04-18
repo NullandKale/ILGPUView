@@ -1,4 +1,5 @@
 ﻿using ILGPU;
+using ILGPU.Runtime;
 using ILGPUView.UI;
 using ILGPUView.Utils;
 using Microsoft.CodeAnalysis;
@@ -17,6 +18,11 @@ using System.Threading.Tasks;
 
 namespace ILGPUView.Files
 {
+    public delegate void setupDelegate(Accelerator accelerator, int width, int height);
+    public delegate bool loopDelegate(Accelerator accelerator, ref byte[] bitmap);
+    public delegate void disposeDelegate();
+    public delegate void terminalDelegate();
+
     public enum OutputType
     {
         bitmap = 0,
